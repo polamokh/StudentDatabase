@@ -1,0 +1,3226 @@
+Microsoft (R) Macro Assembler Version 12.00.21005.1	    05/02/18 13:23:25
+main.asm						     Page 1 - 1
+
+
+				INCLUDE Irvine32.inc
+			      C ; Include file for Irvine32.lib             (Irvine32.inc)
+			      C 
+			      C ;OPTION CASEMAP:NONE		; optional: make identifiers case-sensitive
+			      C 
+			      C INCLUDE SmallWin.inc		; MS-Windows prototypes, structures, and constants
+			      C .NOLIST
+			      C .LIST
+			      C 
+			      C INCLUDE VirtualKeys.inc
+			      C ; VirtualKeys.inc
+			      C .NOLIST
+			      C .LIST
+			      C 
+			      C 
+			      C .NOLIST
+			      C .LIST
+			      C 
+				INCLUDE Macros.inc
+			      C .NOLIST
+			      C .LIST
+			      C 
+
+ = 00001388			BUFFER_SIZE = 5000
+
+ 00000000			.data
+ 00000000 00			Key BYTE ?
+ 00000001 53 74 75 64 65	fileName BYTE "Students Data.txt", 0
+	   6E 74 73 20 44
+	   61 74 61 2E 74
+	   78 74 00
+ 00000013 00000000		fileHandle HANDLE ?
+ 00000017 0D 0A			newLine BYTE 0Dh, 0Ah
+ 00000019 2C			comma BYTE ','
+
+ 0000001A  00000005 [		studentID byte 5 dup(?), 0
+	    00
+	   ] 00
+ 00000020 00			szID byte ?
+ 00000021  00000032 [		studentName byte 50 dup(?), 0
+	    00
+	   ] 00
+ 00000054 00			szName byte ?
+ 00000055  00000003 [		grade byte 3 dup(?), 0
+	    00
+	   ] 00
+ 00000059 00			szGrade byte ?
+ 0000005A 00 00			secNumber byte ?, 0
+
+ 0000005C  00001388 [		buffer BYTE BUFFER_SIZE DUP(?)
+	    00
+	   ]
+ 000013E4 00000000		szBuffer DWORD 0
+
+ 000013E8  00001388 [		tempBuffer BYTE BUFFER_SIZE DUP(?)
+	    00
+	   ]
+ 00002770 00000000		szTempBuffer DWORD 0
+ 00002774  00000032 [		Rec BYTE 50 DUP(?)
+	    00
+	   ]
+ 000027A6 00000000		szRec DWORD ?
+
+ 000027AA 00000000		studentCounter1 DWORD 0
+ 000027AE 00000000		studentCounter2 DWORD 0
+
+ 000027B2 00000000		intNum DWORD ?
+
+ 000027B6  00000005 [		maxStudentID byte 5 dup(?), 0
+	    00
+	   ] 00
+ 000027BC 00000000		szMaxStudentID DWORD ?
+ 000027C0 00000000		maxStudentGrade DWORD ?
+
+				;=================================== Data : Update Studant  ===================================
+ 000027C4 50 6C 65 61 73	Get_Student_Id BYTE "Please Enter Student Id To Update : ",0
+	   65 20 45 6E 74
+	   65 72 20 53 74
+	   75 64 65 6E 74
+	   20 49 64 20 54
+	   6F 20 55 70 64
+	   61 74 65 20 3A
+	   20 00
+ 000027E9 50 6C 65 61 73	Get_Student_Name BYTE "Please Enter Student Grade To Update : ",0
+	   65 20 45 6E 74
+	   65 72 20 53 74
+	   75 64 65 6E 74
+	   20 47 72 61 64
+	   65 20 54 6F 20
+	   55 70 64 61 74
+	   65 20 3A 20 00
+ 00002811 45 72 72 6F 72	File_Is_Empty BYTE "Error : There is No student in This file ! ",0
+	   20 3A 20 54 68
+	   65 72 65 20 69
+	   73 20 4E 6F 20
+	   73 74 75 64 65
+	   6E 74 20 69 6E
+	   20 54 68 69 73
+	   20 66 69 6C 65
+	   20 21 20 00
+ 0000283D 45 72 72 6F 72	Student_Not_Found BYTE "Error : There is no Student with this Id In This File ! ",0
+	   20 3A 20 54 68
+	   65 72 65 20 69
+	   73 20 6E 6F 20
+	   53 74 75 64 65
+	   6E 74 20 77 69
+	   74 68 20 74 68
+	   69 73 20 49 64
+	   20 49 6E 20 54
+	   68 69 73 20 46
+	   69 6C 65 20 21
+	   20 00
+
+ 00002876  00001388 [		Update_Buffer BYTE BUFFER_SIZE DUP(?),0
+	    00
+	   ] 00
+ 00003BFF 00000000		Size_Update_Buffer DWORD ?
+
+ 00003C03 00000000		Temp DWORD 0 
+
+ 00003C07  00000032 [		Row BYTE 50 DUP(?),0
+	    00
+	   ] 00
+ 00003C3A 00000000		Size_Row DWORD 0
+ 00003C3E 00000000		Row_Offset DWORD 0
+
+ 00003C42  00000005 [		checked_Id BYTE 5 DUP(0),0
+	    00
+	   ] 00
+ 00003C48 00000000		Size_checked_Id DWORD 0
+
+ 00003C4C  00000032 [		Names BYTE 50 DUP (?) , 0
+	    00
+	   ] 00
+ 00003C7F 00000000		Size_Name DWORD 0 
+
+ 00003C83  00000032 [		Grades BYTE 50 DUP (0) , 0
+	    00
+	   ] 00
+ 00003CB6 00000000		Size_Grades DWORD 0 
+
+ 00003CBA  00000032 [		SectiOn BYTE 50 DUP (?) , 0
+	    00
+	   ] 00
+ 00003CED 00000000		size_SectiOn DWORD 0 
+
+ 00003CF1 00000000		Target_Grade_Size DWORD 0 
+ 00003CF5 00000000		Target_ID_Size DWORD 0 
+
+
+ 00003CF9 00000000		Row_Is_Updated DWORD 0
+
+ 00003CFD 00000000		ID_Counter DWORD 0 
+ 00003D01 00000000		Name_Counter DWORD 0 
+ 00003D05 00000000		Grade_Counter DWORD 0
+ 00003D09 00000000		Section_Counter DWORD 0
+
+ 00003D0D 00000000		Temp2 DWORD 0 
+
+ 00003D11 00000000		TheIntNumber DWORD 0 
+ 00003D15 00			TheIntNumber2 BYTE 0 
+
+				;-----------------------------------
+				; Data : Read Row PROC
+				;-----------------------------------
+ 00003D16  00000032 [		Read_Row BYTE 50 DUP(?),0
+	    00
+	   ] 00
+ 00003D49 00000000		Size_Read_Row DWORD 0
+ 00003D4D 00000000		Read_Row_Offset DWORD 0
+
+ 00003D51  00000005 [		Cheak_Id BYTE 5 DUP(0),0
+	    00
+	   ] 00
+ 00003D57 00000000		Size_Cheak_Id DWORD 0
+
+				;-----------------------------------
+				; Data : Delete Studant PROC
+				;-----------------------------------
+ 00003D5B 50 6C 65 61 73	Get_Studant_Id BYTE "Please Enter Studant Id to Delete : ",0
+	   65 20 45 6E 74
+	   65 72 20 53 74
+	   75 64 61 6E 74
+	   20 49 64 20 74
+	   6F 20 44 65 6C
+	   65 74 65 20 3A
+	   20 00
+ 00003D80 45 72 72 6F 72	Empty_File BYTE "Error : There is no studant in file ! ",0
+	   20 3A 20 54 68
+	   65 72 65 20 69
+	   73 20 6E 6F 20
+	   73 74 75 64 61
+	   6E 74 20 69 6E
+	   20 66 69 6C 65
+	   20 21 20 00
+ 00003DA7 45 72 72 6F 72	Studant_Not_Found BYTE "Error : There is no studant with this id in file ! ",0
+	   20 3A 20 54 68
+	   65 72 65 20 69
+	   73 20 6E 6F 20
+	   73 74 75 64 61
+	   6E 74 20 77 69
+	   74 68 20 74 68
+	   69 73 20 69 64
+	   20 69 6E 20 66
+	   69 6C 65 20 21
+	   20 00
+
+ 00003DDB  00001388 [		New_Buffer BYTE BUFFER_SIZE DUP(?),0
+	    00
+	   ] 00
+ 00005164 00000000		Size_New_Buffer DWORD ?
+
+ 00005168 00000000		Target_Int DWORD 0
+
+ 0000516C 00000000		Row_Is_Deleted DWORD 0
+
+				;-----------------------------------
+				; Data : Generate Section Report
+				;-----------------------------------
+
+ 00005170 53 65 63 74 69	Sec_Genrated BYTE "Section Report Successfully Generated ...",0
+	   6F 6E 20 52 65
+	   70 6F 72 74 20
+	   53 75 63 63 65
+	   73 73 66 75 6C
+	   6C 79 20 47 65
+	   6E 65 72 61 74
+	   65 64 20 2E 2E
+	   2E 00
+ 0000519A 50 6C 65 61 73	Get_Sec_Number BYTE "Please Enter Number of Section To Generate Section Report : ",0
+	   65 20 45 6E 74
+	   65 72 20 4E 75
+	   6D 62 65 72 20
+	   6F 66 20 53 65
+	   63 74 69 6F 6E
+	   20 54 6F 20 47
+	   65 6E 65 72 61
+	   74 65 20 53 65
+	   63 74 69 6F 6E
+	   20 52 65 70 6F
+	   72 74 20 3A 20
+	   00
+ 000051D7 54 68 65 72 65	Empty_Sec BYTE "There Is No Student In this Section Please Try Again !",0
+	   20 49 73 20 4E
+	   6F 20 53 74 75
+	   64 65 6E 74 20
+	   49 6E 20 74 68
+	   69 73 20 53 65
+	   63 74 69 6F 6E
+	   20 50 6C 65 61
+	   73 65 20 54 72
+	   79 20 41 67 61
+	   69 6E 20 21 00
+
+ 0000520E 53 65 63 74 69	Sec1_File_Name BYTE "Section(1)_Report.txt", 0
+	   6F 6E 28 31 29
+	   5F 52 65 70 6F
+	   72 74 2E 74 78
+	   74 00
+ 00005224 53 65 63 74 69	Sec2_File_Name BYTE "Section(2)_Report.txt", 0
+	   6F 6E 28 32 29
+	   5F 52 65 70 6F
+	   72 74 2E 74 78
+	   74 00
+
+ 0000523A 00			Read_Sec_Number BYTE ?
+
+ 0000523B  00000005 [		Student_Id BYTE 5 DUP(?),0
+	    00
+	   ] 00
+ 00005241 00000000		Size_Student_Id DWORD 0;
+
+ 00005245  00000032 [		Student_Name BYTE 50 DUP(?)
+	    00
+	   ]
+ 00005277 00000000		Size_Student_Name DWORD 0
+
+ 0000527B  00000003 [		Student_Grade BYTE 3 DUP(?)
+	    00
+	   ]
+ 0000527E 00000000		Size_Student_Grade DWORD 0
+
+ 00005282 00			Student_Sec BYTE ?
+
+ 00005283  00000032 [		New_Row BYTE 50 DUP(?),0
+	    00
+	   ] 00
+
+ 000052B6  00001388 [		Sorted_Buffer BYTE BUFFER_SIZE DUP(?),0
+	    00
+	   ] 00
+ 0000663F 00000000		Size_Sorted_Buffer DWORD ?
+
+ 00006643  00001388 [		Temp_Buffer BYTE BUFFER_SIZE DUP(?),0
+	    00
+	   ] 00
+ 000079CC 00000000		Size_Temp_Buffer DWORD ?
+
+ 000079D0 00000000		Index_Min_Id DWORD 0
+
+ 000079D4  00000064 [		Array_Students_Id DWORD 100 DUP(?)
+	    00000000
+	   ]
+ 00007B64 00000000		Size_Array DWORD 0
+
+ 00007B68 00			Alpha_Grade BYTE ?
+
+ 00007B69 00000000		Loop_Counter DWORD 0
+ 00007B6D 00000000		Counter DWORD 0
+
+ 00007B71 00			select byte ?
+
+ 00000000			.code
+				DeleteStudent PROTO, Target_Id:PTR BYTE, Target_Size:DWORD
+				DisplayStudentData PROTO sID:DWORD
+				SaveDatabase PROTO, fileN:PTR BYTE
+				;---------------------------------------------------------
+				;Convert String to Intger number
+				;Receives: Pointer to String and Size of String
+				;Return: Intger Number in intNum variable
+				;---------------------------------------------------------
+ 00000000			ConvertStringToInt PROC uses edx esi ebx ecx eax, stringPtr:PTR BYTE, stringSize: DWORD 
+ 00000008  C7 05 000027B2 R		mov intNum, 0
+	   00000000
+					
+ 00000012  BA 00000000			mov edx, 0
+ 00000017  BE 0000000A			mov esi, 10
+ 0000001C  8B 5D 08			mov ebx, stringPtr
+ 0000001F  8B 4D 0C			mov ecx, stringSize
+ 00000022				convert:
+ 00000022  51					push ecx
+ 00000023  0F B6 03				movzx eax, byte ptr [ebx] 
+ 00000026  83 E8 30				sub eax, '0'
+
+ 00000029  49					dec ecx
+ 0000002A  83 F9 00				cmp ecx, 0
+ 0000002D  74 04				je lastNum
+
+ 0000002F					power:
+ 0000002F  F7 E6					mul esi
+ 00000031  E2 FC				loop power
+
+ 00000033					lastNum:
+ 00000033  01 05 000027B2 R			add intNum, eax
+ 00000039  43					inc ebx
+ 0000003A  59					pop ecx
+ 0000003B  E2 E5			loop convert
+
+					ret
+ 00000046			ConvertStringToInt ENDP
+
+				;-----------------------------------------------------------------
+				; Read Row PROC PROC
+				; Receives: Buffer Offset, Buffer Size
+				; Return : Row -> Read_Row, Row Size -> Size_Read_Row
+				;		   Buffer Offset -> Read_Row_Offset, Row Id -> Cheak_Id
+				;-----------------------------------------------------------------
+ 00000046			Read_Row_Function PROC, Buffer_Offset:PTR BYTE
+ 00000049  C7 05 00003D49 R		    mov Size_Read_Row, 0
+	   00000000
+ 00000053  C7 05 00003D57 R			mov Size_Cheak_Id, 0
+	   00000000
+
+ 0000005D  8B 75 08				mov esi, Buffer_Offset
+ 00000060  B9 00000001				mov ecx, 1
+ 00000065  8B 1D 00003D4D R			mov ebx, Read_Row_Offset
+ 0000006B  BA 00000000				mov edx, 0
+ 00000070					Cheak_NewLine:
+ 00000070  8A 04 33					mov al, [esi + ebx]
+ 00000073  3A 05 00000017 R				cmp al, newLine
+ 00000079  74 18					je Row_Is_Read
+ 0000007B  88 82 00003D16 R				mov [Read_Row + edx], al
+ 00000081  83 05 00003D49 R				add Size_Read_Row, 1
+	   01
+ 00000088  83 C3 01					add ebx, 1
+ 0000008B  83 C2 01					add edx, 1
+ 0000008E  83 C1 01					add ecx, 1
+ 00000091  E2 DD				loop Cheak_NewLine
+
+ 00000093					Row_Is_Read:
+
+ 00000093  A1 00003D49 R			mov eax, Size_Read_Row
+ 00000098  83 C0 02				add eax, 2
+ 0000009B  01 05 00003D4D R			add Read_Row_Offset, eax
+
+ 000000A1  8B 0D 00003D49 R			mov ecx, Size_Read_Row
+ 000000A7  BB 00000000				mov ebx, 0
+ 000000AC  BA 00000000				mov edx, 0
+ 000000B1					Read_Studant_Id:
+ 000000B1  8A 83 00003D16 R				mov al, [Read_Row + ebx]
+ 000000B7  3A 05 00000019 R				cmp al, comma
+ 000000BD  74 15					je Break
+ 000000BF  88 82 00003D51 R				mov [Cheak_Id + edx], al
+ 000000C5  83 05 00003D57 R				add Size_Cheak_Id, 1
+	   01
+ 000000CC  83 C2 01					add edx, 1
+ 000000CF  83 C3 01					add ebx, 1
+ 000000D2  E2 DD				loop Read_Studant_Id
+ 000000D4					Break:
+						ret
+ 000000D8			Read_Row_Function ENDP
+
+				;-----------------------------------------------------------------
+				; Bubble Sort PROC
+				; Receives : Offset Array DWORD, Array Size
+				; Return : No thing
+				;-----------------------------------------------------------------
+ 000000D8			BubbleSort PROC USES eax ecx esi, pArray:PTR DWORD, Count:DWORD 
+ 000000DE  8B 4D 0C			mov ecx,Count
+ 000000E1  49				dec ecx 
+ 000000E2				L1: 
+ 000000E2  51					push ecx 
+ 000000E3  8B 75 08				mov esi,pArray 
+ 000000E6				L2: 
+ 000000E6  8B 06				mov eax,[esi] 
+ 000000E8  39 46 04				cmp [esi+4],eax 
+ 000000EB  7F 05				jg L3 ; if [ESI] <= [ESI+4]
+ 000000ED  87 46 04				xchg eax,[esi+4] 
+ 000000F0  89 06				mov [esi],eax
+ 000000F2				L3: 
+ 000000F2  83 C6 04				add esi,4 
+ 000000F5  E2 EF			loop L2 
+ 000000F7  59					pop ecx 
+ 000000F8  E2 E8			loop L1 
+ 000000FA				L4: 
+					
+					ret
+ 00000101			BubbleSort ENDP
+
+				;-----------------------------------------------------------------
+				; Get Alpha Grade PROC
+				; Receives : Offset of Int Grade, Size Grade
+				; Return : Alpha Grade -> Alpha_Grade
+				;-----------------------------------------------------------------
+ 00000101			Get_Alpha_Grade PROC, Grade_Offset :PTR BYTE, Grade_Size: PTR DWORD
+					
+ 00000104  8B 5D 0C			mov ebx, Grade_Size
+					Invoke ConvertStringToInt, Grade_Offset, ebx
+ 00000110  8B 1D 000027B2 R		mov ebx, intNum
+
+ 00000116  83 FB 3C			cmp ebx, 60
+ 00000119  73 0B			jae Else_If1
+
+ 0000011B  C6 05 00007B68 R			mov Alpha_Grade, "F"
+	   46
+						ret
+
+ 00000126				Else_If1:
+ 00000126  83 FB 46			cmp ebx, 70
+ 00000129  73 0B			jae Else_If2
+
+ 0000012B  C6 05 00007B68 R			mov Alpha_Grade, "D"
+	   44
+						ret
+
+ 00000136				Else_If2:
+ 00000136  83 FB 50			cmp ebx, 80
+ 00000139  73 0B			jae Else_If3
+
+ 0000013B  C6 05 00007B68 R			mov Alpha_Grade, "C"
+	   43
+						ret
+
+ 00000146				Else_If3:
+ 00000146  83 FB 5A			cmp ebx, 90
+ 00000149  73 0B			jae Else_If
+
+ 0000014B  C6 05 00007B68 R			mov Alpha_Grade, "B"
+	   42
+						ret
+
+ 00000156				Else_If:
+						
+ 00000156  C6 05 00007B68 R			mov Alpha_Grade, "A"
+	   41
+						ret
+
+ 00000161			Get_Alpha_Grade ENDP
+
+				;-----------------------------------------------------------------
+				; Get Studant Info PROC
+				; Receives : Student Id : DWORD
+				; Return : Student_Id, Student_Name, Student_Grade, Studant_Sec
+				;-----------------------------------------------------------------
+ 00000161			Get_Studant_Info PROC, Studant_Id:DWORD
+ 00000164  C7 05 00003D4D R		mov Read_Row_Offset, 0
+	   00000000
+ 0000016E  C7 05 00003D49 R		mov Size_Read_Row, 0
+	   00000000
+ 00000178  C7 05 00003D57 R		mov Size_Cheak_Id, 0
+	   00000000
+
+ 00000182				While_Loop:
+
+ 00000182  C7 05 00003D49 R		mov Size_Read_Row, 0
+	   00000000
+ 0000018C  C7 05 00003D57 R		mov Size_Cheak_Id, 0
+	   00000000
+
+					Invoke Read_Row_Function, offset buffer
+					Invoke ConvertStringToInt, offset Cheak_Id, Size_Cheak_Id
+ 000001B0  8B 1D 000027B2 R		mov ebx, intNum
+
+ 000001B6  3B 5D 08			cmp ebx, Studant_Id
+ 000001B9  74 02			je Break
+
+ 000001BB  EB C5			jmp While_Loop
+
+ 000001BD				Break:
+						
+ 000001BD  C7 05 00005241 R			mov Size_Student_Id, 0
+	   00000000
+ 000001C7  C7 05 00005277 R			mov Size_Student_Name, 0
+	   00000000
+ 000001D1  C7 05 0000527E R			mov Size_Student_Grade, 0
+	   00000000
+						
+
+ 000001DB  8B 0D 00003D49 R			mov ecx, Size_Read_Row
+ 000001E1  BB 00000000				mov ebx, 0
+ 000001E6  BE 00000000				mov esi, 0
+ 000001EB					Split_At_Comma:
+ 000001EB  8A 83 00003D16 R				mov al, [Read_Row + ebx]
+ 000001F1  3A 05 00000019 R				cmp al, Comma
+ 000001F7  74 58					je Comma_Found
+
+ 000001F9  83 FE 00					cmp esi, 0
+ 000001FC  75 15					jne Studant_Name
+
+ 000001FE  8B 3D 00005241 R				mov edi, Size_Student_Id
+ 00000204  88 87 0000523B R				mov [Student_Id + edi], al
+ 0000020A  83 05 00005241 R				add Size_Student_Id, 1
+	   01
+ 00000211  EB 41					jmp Again
+
+ 00000213						Studant_Name:
+ 00000213  83 FE 01					cmp esi, 1
+ 00000216  75 15					jne Studant_Grade
+							
+ 00000218  8B 3D 00005277 R				mov edi, Size_Student_Name
+ 0000021E  88 87 00005245 R				mov [Student_Name + edi], al
+ 00000224  83 05 00005277 R				add Size_Student_Name, 1
+	   01
+ 0000022B  EB 27					jmp Again
+
+ 0000022D						Studant_Grade:
+ 0000022D  83 FE 02					cmp esi, 2
+ 00000230  75 15					jne Studant_Sec
+							
+ 00000232  8B 3D 0000527E R				mov edi, Size_Student_Grade
+ 00000238  88 87 0000527B R				mov [Student_Grade + edi], al
+ 0000023E  83 05 0000527E R				add Size_Student_Grade, 1
+	   01
+ 00000245  EB 0D					jmp Again
+
+ 00000247						Studant_Sec:
+							
+ 00000247  BF 00000000					mov edi, 0
+ 0000024C  A2 00005282 R				mov Student_Sec, al
+
+ 00000251						Comma_Found:
+ 00000251  83 C6 01					add esi, 1
+
+ 00000254						Again:
+ 00000254  83 C3 01					add ebx, 1
+ 00000257  E2 92				loop Split_At_Comma
+
+						Invoke Get_Alpha_Grade, offset Student_Grade, Size_Student_Grade
+
+ 00000269  8B 0D 00005241 R			mov ecx, Size_Student_Id
+ 0000026F  8B 15 0000663F R			mov edx, Size_Sorted_Buffer
+ 00000275  BB 00000000				mov ebx, 0
+ 0000027A					Copy_Id:
+ 0000027A  8A 83 0000523B R				mov al, [Student_Id + ebx]
+ 00000280  88 82 000052B6 R				mov [Sorted_Buffer + edx], al
+ 00000286  83 05 0000663F R				add Size_Sorted_Buffer, 1
+	   01
+ 0000028D  83 C3 01					add ebx, 1
+ 00000290  83 C2 01					add edx, 1
+ 00000293  E2 E5				loop Copy_Id
+
+ 00000295  B0 20				mov al, " "
+ 00000297  88 82 000052B6 R			mov [Sorted_Buffer + edx], al
+ 0000029D  83 05 0000663F R			add Size_Sorted_Buffer, 1
+	   01
+
+ 000002A4  8B 0D 00005277 R			mov ecx, Size_Student_Name
+ 000002AA  8B 15 0000663F R			mov edx, Size_Sorted_Buffer
+ 000002B0  BB 00000000				mov ebx, 0
+ 000002B5					Copy_Name:
+ 000002B5  8A 83 00005245 R				mov al, [Student_Name + ebx]
+ 000002BB  88 82 000052B6 R				mov [Sorted_Buffer + edx], al
+ 000002C1  83 05 0000663F R				add Size_Sorted_Buffer, 1
+	   01
+ 000002C8  83 C3 01					add ebx, 1
+ 000002CB  83 C2 01					add edx, 1
+ 000002CE  E2 E5				loop Copy_Name
+
+ 000002D0  B0 20				mov al, " "
+ 000002D2  88 82 000052B6 R			mov [Sorted_Buffer + edx], al
+ 000002D8  83 05 0000663F R			add Size_Sorted_Buffer, 1
+	   01
+
+ 000002DF  8B 0D 0000527E R			mov ecx, Size_Student_Grade
+ 000002E5  8B 15 0000663F R			mov edx, Size_Sorted_Buffer
+ 000002EB  BB 00000000				mov ebx, 0
+ 000002F0					Copy_Grade:
+ 000002F0  8A 83 0000527B R				mov al, [Student_Grade + ebx]
+ 000002F6  88 82 000052B6 R				mov [Sorted_Buffer + edx], al
+ 000002FC  83 05 0000663F R				add Size_Sorted_Buffer, 1
+	   01
+ 00000303  83 C3 01					add ebx, 1
+ 00000306  83 C2 01					add edx, 1
+ 00000309  E2 E5				loop Copy_Grade
+
+ 0000030B  B0 20				mov al, " "
+ 0000030D  88 82 000052B6 R			mov [Sorted_Buffer + edx], al
+ 00000313  83 05 0000663F R			add Size_Sorted_Buffer, 1
+	   01
+
+
+ 0000031A  83 C2 01				add edx, 1
+ 0000031D  A0 00007B68 R			mov al, Alpha_Grade
+ 00000322  88 82 000052B6 R			mov [Sorted_Buffer + edx], al
+ 00000328  83 05 0000663F R			add Size_Sorted_Buffer, 1
+	   01
+
+ 0000032F  83 C2 01				add edx, 1
+ 00000332  B0 0D				mov al, 0Dh
+ 00000334  88 82 000052B6 R			mov [Sorted_Buffer + edx], al
+ 0000033A  83 05 0000663F R			add Size_Sorted_Buffer, 1
+	   01
+
+ 00000341  83 C2 01				add edx, 1
+ 00000344  B0 0A				mov al, 0Ah
+ 00000346  88 82 000052B6 R			mov [Sorted_Buffer + edx], al
+ 0000034C  83 05 0000663F R			add Size_Sorted_Buffer, 1
+	   01
+
+						ret
+ 00000357			Get_Studant_Info ENDP
+
+				;-----------------------------------------------------------------
+				; Generate Section Report PROC
+				; Receives : Offset Sction Number : BYTE
+				; Return : No thing
+				;-----------------------------------------------------------------
+ 00000357			Generate_Section_Report PROC SecNum : BYTE
+ 0000035A  A1 000013E4 R		mov eax, szBuffer
+ 0000035F  83 F8 00			cmp eax, 0
+ 00000362  75 0E			jne Not_Empty
+
+ 00000364  BA 00003D80 R		mov edx, offset Empty_File
+ 00000369  E8 00000000 E		call writestring
+					ret
+
+ 00000372				Not_Empty:
+ 00000372  C7 05 000079CC R		mov Size_Temp_Buffer,0
+	   00000000
+
+ 0000037C  8B 0D 000013E4 R		mov ecx, szBuffer
+ 00000382  BB 00000000			mov ebx, 0
+ 00000387				Copy_Buffer_Temp:
+ 00000387  8A 83 0000005C R			mov al, [buffer + ebx]
+ 0000038D  88 83 00006643 R			mov [Temp_Buffer + ebx], al
+ 00000393  83 05 000079CC R			add Size_Temp_Buffer, 1
+	   01
+ 0000039A  83 C3 01				add ebx, 1
+ 0000039D  E2 E8			loop Copy_Buffer_Temp
+
+ 0000039F  C7 05 000013E4 R		mov szBuffer, 0
+	   00000000
+
+ 000003A9  C7 05 00003D4D R		mov Read_Row_Offset, 0
+	   00000000
+					
+ 000003B3				While_Loop:
+ 000003B3  A1 000079CC R			mov eax, Size_Temp_Buffer
+ 000003B8  3B 05 00003D4D R			cmp eax, Read_Row_Offset
+ 000003BE  74 5E				je Break
+
+ 000003C0  C7 05 00003D49 R			mov Size_Read_Row, 0
+	   00000000
+ 000003CA  C7 05 00003D57 R			mov Size_Cheak_Id, 0
+	   00000000
+
+						Invoke Read_Row_Function, offset Temp_Buffer
+
+ 000003DE  8B 1D 00003D49 R			mov ebx, Size_Read_Row
+ 000003E4  83 EB 01				sub ebx, 1
+ 000003E7  8A 83 00003D16 R			mov al, [Read_Row + ebx]
+
+ 000003ED  3A 45 08				cmp al, SecNum
+ 000003F0  75 C1				jne While_Loop
+
+					    Invoke ConvertStringToInt, Offset Cheak_Id, Size_Cheak_Id
+ 00000402  8B 15 000027B2 R			mov edx, intNum
+ 00000408  8B 1D 00007B64 R			mov ebx, Size_Array
+ 0000040E  89 14 9D				mov [Array_Students_Id + (ebx * 4)], edx
+	   000079D4 R
+ 00000415  83 05 00007B64 R			add Size_Array, 1
+	   01
+
+ 0000041C  EB 95				jmp While_Loop
+
+ 0000041E					Break:
+
+ 0000041E  A1 00007B64 R			mov eax, Size_Array
+ 00000423  83 F8 00				cmp eax, 0
+ 00000426  75 19				jne Sec_Not_Empty
+
+ 00000428  E8 00000000 E			call crlf
+ 0000042D  BA 000051D7 R			mov edx, offset Empty_Sec
+ 00000432  E8 00000000 E			call writestring
+ 00000437  E8 00000000 E			call crlf
+ 0000043C  E9 000000AC				jmp Out_Function
+
+ 00000441					Sec_Not_Empty:
+
+ 00000441  A1 00007B64 R			mov eax, Size_Array
+ 00000446  83 F8 01				cmp eax, 1
+ 00000449  74 10				je Not_Need_Sort
+
+						Invoke BubbleSort, offset Array_Students_Id, Size_Array
+
+ 0000045B					Not_Need_Sort:
+
+ 0000045B  8B 0D 00007B64 R			mov ecx, Size_Array
+ 00000461  BB 00000000				mov ebx, 0
+ 00000466					Copy_Sorted_Row:
+ 00000466  8B 83 000079D4 R				mov eax, [Array_Students_Id + ebx]
+ 0000046C  89 0D 00007B69 R				mov Loop_Counter, ecx
+ 00000472  89 1D 00007B6D R				mov Counter, ebx
+							Invoke Get_Studant_Info, eax
+ 0000047E  8B 1D 00007B6D R				mov ebx, Counter
+ 00000484  8B 0D 00007B69 R				mov ecx, Loop_Counter
+ 0000048A  83 C3 04					add ebx, 4
+ 0000048D  E2 D7				loop Copy_Sorted_Row
+						
+ 0000048F  C7 05 000013E4 R			mov szBuffer, 0
+	   00000000
+ 00000499  8B 0D 0000663F R			mov ecx, Size_Sorted_Buffer
+ 0000049F  BB 00000000				mov ebx, 0
+ 000004A4					Write_File_Sec:
+ 000004A4  8A 83 000052B6 R				mov al, [Sorted_Buffer + ebx]
+ 000004AA  88 83 0000005C R				mov [buffer + ebx], al
+ 000004B0  83 05 000013E4 R				add szBuffer, 1
+	   01
+ 000004B7  83 C3 01					add ebx, 1
+ 000004BA  E2 E8				loop Write_File_Sec
+
+ 000004BC  8A 45 08				mov al, SecNum
+ 000004BF  3C 32				cmp al, "2"
+ 000004C1  74 0C				je Section2
+						INVOKE SaveDatabase, offset Sec1_File_Name
+ 000004CD  EB 0A				jmp Print_String
+
+ 000004CF					Section2:
+						INVOKE SaveDatabase, offset Sec2_File_Name
+
+ 000004D9					Print_String:
+ 000004D9  E8 00000000 E			call crlf
+ 000004DE  BA 00005170 R			mov edx, offset Sec_Genrated
+ 000004E3  E8 00000000 E			call writestring
+ 000004E8  E8 00000000 E			call crlf
+
+ 000004ED					Out_Function:
+ 000004ED  C7 05 000013E4 R			mov szBuffer, 0
+	   00000000
+ 000004F7  8B 0D 000079CC R			mov ecx, Size_Temp_Buffer
+ 000004FD  BB 00000000				mov ebx, 0
+ 00000502					Return_Old_Buffer:
+ 00000502  8A 83 00006643 R				mov al, [Temp_Buffer + ebx]
+ 00000508  88 83 0000005C R				mov [buffer + ebx], al
+ 0000050E  83 05 000013E4 R				add szBuffer, 1
+	   01
+ 00000515  83 C3 01					add ebx,1
+ 00000518  E2 E8				loop Return_Old_Buffer
+						ret
+ 0000051E			Generate_Section_Report ENDP
+
+				;-------------------------------------------------
+				;Display Top Student by ID
+				;Recieves: Student ID
+				;-------------------------------------------------
+ 0000051E			DisplayTopStudent PROC sID:DWORD
+ 00000521  BE 0000005C R		mov esi, offset buffer
+ 00000526  8B 0D 000013E4 R		mov ecx, szBuffer
+
+ 0000052C  83 F9 00			cmp ecx, 0
+ 0000052F  0F 84 0000011C		je notFound
+
+ 00000535				checkAllRec:
+ 00000535  51					push ecx
+ 00000536  BF 00002774 R			mov edi, offset Rec
+ 0000053B  B0 0D				mov al, 0Dh
+ 0000053D  B9 00000032				mov ecx, 50
+ 00000542					getRec:
+ 00000542  38 06					cmp byte ptr [esi], al
+ 00000544  74 08					je RecReadDone
+ 00000546  8A 1E					mov bl, byte ptr [esi]
+ 00000548  88 1F					mov byte ptr [edi], bl
+ 0000054A  46						inc esi
+ 0000054B  47						inc edi
+ 0000054C  E2 F4				loop getRec
+
+ 0000054E					RecReadDone:
+ 0000054E  83 C6 02				add esi, 2
+ 00000551  56					push esi
+ 00000552  83 E9 32				sub ecx, 50
+ 00000555  F7 D9				neg ecx
+ 00000557  89 0D 000027A6 R			mov szRec, ecx
+
+						;check is the same id or not
+ 0000055D  BE 00002774 R			mov esi, offset Rec
+ 00000562  A0 00000019 R			mov al, comma
+ 00000567  8B 0D 000027A6 R			mov ecx, szRec
+ 0000056D					checkID:
+ 0000056D  38 06					cmp byte ptr [esi], al
+ 0000056F  74 03					je outCheckID
+ 00000571  46						inc esi
+ 00000572  E2 F9				loop checkID
+ 00000574					outCheckID:
+ 00000574  2B 0D 000027A6 R			sub ecx, szRec
+ 0000057A  F7 D9				neg ecx
+ 0000057C  8B D1				mov edx, ecx
+ 0000057E  BE 00002774 R			mov esi, offset rec
+						invoke ConvertStringToInt,
+							esi, edx
+ 0000058A  A1 000027B2 R			mov eax, intNum
+ 0000058F  3B 45 08				cmp eax, sID
+ 00000592  75 07				jne notID
+ 00000594  BB 00000001				mov ebx, 1
+ 00000599  EB 05				jmp ID
+ 0000059B					notID:
+ 0000059B  BB 00000000				mov ebx, 0
+ 000005A0					ID:
+ 000005A0  5E					pop esi
+ 000005A1  59					pop ecx
+ 000005A2  2B 0D 000027A6 R			sub ecx, szRec
+ 000005A8  83 E9 02				sub ecx, 2
+ 000005AB  83 FB 01				cmp ebx, 1
+ 000005AE  74 0A				je endCheckAllRec
+ 000005B0  83 F9 00				cmp ecx, 0
+ 000005B3  74 05				je endCheckAllRec
+ 000005B5  E9 FFFFFF7B			jmp checkAllRec
+ 000005BA				endCheckAllRec:
+
+ 000005BA  83 FB 01			cmp ebx, 1
+ 000005BD  0F 85 0000008E		jne notFound
+ 000005C3				Found:
+ 000005C3  BE 00002774 R			mov esi, offset Rec
+ 000005C8  BF 00002774 R			mov edi, offset Rec
+ 000005CD  8B 0D 000027A6 R			mov ecx, szRec
+ 000005D3					coutID:
+ 000005D3  80 3F 2C					cmp byte ptr [edi], ','
+ 000005D6  74 03					je outCoutID
+ 000005D8  47						inc edi
+ 000005D9  E2 F8				loop coutID
+ 000005DB					outCoutID:
+ 000005DB  C6 07 00				mov byte ptr [edi], 0
+ 000005DE  8B D6				mov edx, esi
+ 000005E0  E8 00000000 E			call writestring
+						mWrite <09h>
+ 00007B72		     1		.data		
+ 00007B72 09 00		     1		??0000 BYTE 09h,0	
+ 000005E5		     1		.code
+ 000005E5  52		     1		push	edx
+ 000005E6  BA 00007B72 R     1		mov	edx,OFFSET ??0000
+ 000005EB  E8 00000000 E     1		call	WriteString
+ 000005F0  5A		     1		pop	edx
+ 000005F1  47					inc edi
+ 000005F2  8B F7				mov esi, edi
+
+ 000005F4					coutName:
+ 000005F4  80 3F 2C					cmp byte ptr [edi], ','
+ 000005F7  74 03					je outCoutName
+ 000005F9  47						inc edi
+ 000005FA  E2 F8				loop coutName
+ 000005FC					outCoutName:
+ 000005FC  C6 07 00				mov byte ptr [edi], 0
+ 000005FF  8B D6				mov edx, esi
+ 00000601  E8 00000000 E			call writestring
+						mWrite <09h>
+ 00007B74		     1		.data		
+ 00007B74 09 00		     1		??0001 BYTE 09h,0	
+ 00000606		     1		.code
+ 00000606  52		     1		push	edx
+ 00000607  BA 00007B74 R     1		mov	edx,OFFSET ??0001
+ 0000060C  E8 00000000 E     1		call	WriteString
+ 00000611  5A		     1		pop	edx
+ 00000612  47					inc edi
+ 00000613  8B F7				mov esi, edi
+
+ 00000615					coutGrade:
+ 00000615  80 3F 2C					cmp byte ptr [edi], ','
+ 00000618  74 03					je outCoutGrade
+ 0000061A  47						inc edi
+ 0000061B  E2 F8				loop coutGrade
+ 0000061D					outCoutGrade:
+ 0000061D  C6 07 00				mov byte ptr [edi], 0
+ 00000620  8B D6				mov edx, esi
+ 00000622  E8 00000000 E			call writestring
+						mWrite <09h>
+ 00007B76		     1		.data		
+ 00007B76 09 00		     1		??0002 BYTE 09h,0	
+ 00000627		     1		.code
+ 00000627  52		     1		push	edx
+ 00000628  BA 00007B76 R     1		mov	edx,OFFSET ??0002
+ 0000062D  E8 00000000 E     1		call	WriteString
+ 00000632  5A		     1		pop	edx
+
+ 00000633  8B C7				mov eax, edi
+ 00000635  2B C6				sub eax, esi
+						invoke Get_Alpha_Grade,
+							esi, eax
+ 0000063E  A0 00007B68 R			mov al, Alpha_Grade
+ 00000643  E8 00000000 E			call writechar
+ 00000648  E8 00000000 E			call crlf
+					ret
+
+ 00000651				notFound:
+						mWrite <"Not Found ID", 0Dh, 0Ah>
+ 00007B78		     1		.data		
+ 00007B78 4E 6F 74 20 46     1		??0003 BYTE "Not Found ID", 0Dh, 0Ah,0	
+	   6F 75 6E 64 20
+	   49 44 0D 0A 00
+ 00000651		     1		.code
+ 00000651  52		     1		push	edx
+ 00000652  BA 00007B78 R     1		mov	edx,OFFSET ??0003
+ 00000657  E8 00000000 E     1		call	WriteString
+ 0000065C  5A		     1		pop	edx
+					ret
+ 00000661			DisplayTopStudent ENDP
+
+				;---------------------------------------------------------
+				;Display Top 5 Students
+				;---------------------------------------------------------
+ 00000661			DisplayTop5 PROC
+ 00000661  FC				cld
+ 00000662  83 3D 000013E4 R		cmp szBuffer, 0
+	   00
+ 00000669  0F 84 00000139		je return
+
+ 0000066F  BE 0000005C R		mov esi, offset buffer
+ 00000674  BF 000013E8 R		mov edi, offset tempBuffer
+ 00000679  8B 0D 000013E4 R		mov ecx, szBuffer
+ 0000067F  89 0D 00002770 R		mov szTempBuffer, ecx
+ 00000685  F3/ A4			rep movsb
+
+ 00000687  B9 00000005			mov ecx, 5
+ 0000068C				top5:
+ 0000068C  51					push ecx
+ 0000068D  C7 05 000027C0 R			mov maxStudentGrade, 0
+	   00000000
+						
+ 00000697  BE 0000005C R			mov esi, offset buffer
+ 0000069C  8B 0D 000013E4 R			mov ecx, szBuffer
+ 000006A2					checkAllRec:
+ 000006A2  51						push ecx
+ 000006A3  BF 00002774 R				mov edi, offset Rec
+ 000006A8  B0 0D					mov al, 0Dh
+ 000006AA  B9 00000032					mov ecx, 50
+ 000006AF						getRec:
+ 000006AF  38 06						cmp byte ptr [esi], al
+ 000006B1  74 08						je RecReadDone
+ 000006B3  8A 1E						mov bl, byte ptr [esi]
+ 000006B5  88 1F						mov byte ptr [edi], bl
+ 000006B7  46							inc esi
+ 000006B8  47							inc edi
+ 000006B9  E2 F4					loop getRec
+
+ 000006BB						RecReadDone:
+ 000006BB  83 C6 02					add esi, 2
+ 000006BE  56						push esi
+ 000006BF  83 E9 32					sub ecx, 50
+ 000006C2  F7 D9					neg ecx
+ 000006C4  89 0D 000027A6 R				mov szRec, ecx
+
+ 000006CA  BF 00002774 R				mov edi, offset Rec
+ 000006CF  B9 00000002					mov ecx, 2
+ 000006D4						getSecComma:
+ 000006D4  51							push ecx
+ 000006D5  A0 00000019 R					mov al, comma
+ 000006DA  8B 0D 000027A6 R					mov ecx, szRec
+ 000006E0  F2/ AE						repne scasb
+ 000006E2  59							pop ecx
+ 000006E3  E2 EF					loop getSecComma
+
+ 000006E5  57						push edi
+ 000006E6  8B DF					mov ebx, edi
+ 000006E8  B9 00000004					mov ecx, 4
+ 000006ED  F2/ AE					repne scasb
+ 000006EF  4F						dec edi
+ 000006F0  2B DF					sub ebx, edi
+ 000006F2  F7 DB					neg ebx
+ 000006F4  5F						pop edi
+
+							invoke ConvertStringToInt,
+								edi, ebx
+ 000006FC  8B 1D 000027B2 R				mov ebx, intNum
+ 00000702  3B 1D 000027C0 R				cmp ebx, maxStudentGrade
+ 00000708  76 31					jna skip
+							
+ 0000070A  89 1D 000027C0 R				mov maxStudentGrade, ebx
+ 00000710  BE 00002774 R				mov esi, offset Rec
+ 00000715  BF 000027B6 R				mov edi, offset maxStudentID
+ 0000071A  A0 00000019 R				mov al, comma
+ 0000071F  B9 00000005					mov ecx, 5
+ 00000724						setMaxStudent:
+ 00000724  3A 06						cmp al, [esi]
+ 00000726  74 08						je com
+ 00000728  8A 1E						mov bl, [esi]
+ 0000072A  88 1F						mov [edi], bl
+ 0000072C  46							inc esi
+ 0000072D  47							inc edi
+ 0000072E  E2 F4					loop setMaxStudent
+
+ 00000730						com:
+ 00000730  83 E9 05					sub ecx, 5
+ 00000733  F7 D9					neg ecx
+ 00000735  89 0D 000027BC R				mov szMaxStudentID, ecx
+
+ 0000073B						skip:
+ 0000073B  5E						pop esi
+ 0000073C  59						pop ecx
+ 0000073D  2B 0D 000027A6 R				sub ecx, szRec
+ 00000743  83 E9 02					sub ecx, 2
+ 00000746  83 F9 00					cmp ecx, 0
+ 00000749  74 05					je endCheckAllRec
+ 0000074B  E9 FFFFFF52				jmp checkAllRec
+ 00000750					endCheckAllRec:
+
+						invoke ConvertStringToInt,
+							addr maxStudentID, szMaxStudentID
+
+						invoke DisplayTopStudent, intNum
+							
+						invoke DeleteStudent,
+							offset maxStudentID, szMaxStudentID
+
+ 0000077B  59					pop ecx
+ 0000077C  49					dec ecx
+ 0000077D  83 3D 000013E4 R			cmp szBuffer, 0
+	   00
+ 00000784  74 0A				je endTop5
+ 00000786  83 F9 00				cmp ecx, 0
+ 00000789  74 05				je endTop5
+ 0000078B  E9 FFFFFEFC			jmp top5
+
+ 00000790				endTop5:
+ 00000790  BE 000013E8 R		mov esi, offset tempBuffer
+ 00000795  BF 0000005C R		mov edi, offset buffer
+ 0000079A  8B 0D 00002770 R		mov ecx, szTempBuffer
+ 000007A0  89 0D 000013E4 R		mov szBuffer, ecx
+ 000007A6  F3/ A4			rep movsb
+
+ 000007A8				return:
+ 000007A8  C3				ret
+ 000007A9			DisplayTop5 ENDP
+
+				;------------------------------------------------------
+				;checks the number of students in each section
+				;------------------------------------------------------ 
+ 000007A9			CheckStudent PROC
+ 000007A9  83 3D 000013E4 R		cmp szBuffer, 0
+	   00
+ 000007B0  74 56			je return
+
+ 000007B2  BB 0000005C R		mov ebx, OFFSET buffer
+ 000007B7  8B 0D 000013E4 R		mov ecx, szBuffer
+
+ 000007BD  C7 05 000027AA R		mov studentCounter1, 0
+	   00000000
+ 000007C7  C7 05 000027AE R		mov studentCounter2, 0
+	   00000000
+
+ 000007D1				l:
+ 000007D1  51				push ecx 
+ 000007D2  8A 03				mov al, [ebx]
+ 000007D4  3A 05 00000017 R			cmp al, newline
+ 000007DA  74 02				je incStudent
+
+ 000007DC  EB 26				jmp continue
+ 000007DE					incStudent:
+ 000007DE  83 EB 01					sub ebx ,1 
+ 000007E1  8A 03					mov al , [ebx]
+ 000007E3  2C 30					sub al , '0'
+ 000007E5  B1 01					mov cl,  1
+ 000007E7  2A C8					sub cl , al
+ 000007E9  80 F9 00					cmp cl, 0
+ 000007EC  74 02					je incStudent1
+
+ 000007EE  EB 0B					jmp incStudent2
+
+ 000007F0						incStudent1:	
+ 000007F0  FF 05 000027AA R				inc studentCounter1
+ 000007F6  83 C3 01					add ebx , 1 
+ 000007F9  EB 09					jmp continue
+
+ 000007FB						incStudent2:
+ 000007FB  FF 05 000027AE R				inc studentCounter2
+ 00000801  83 C3 01					add ebx , 1 
+
+ 00000804					continue:
+ 00000804  43					inc ebx
+ 00000805  59					pop ecx
+ 00000806  E2 C9			loop l
+
+ 00000808				return:
+ 00000808  C3				ret
+ 00000809			CheckStudent endp
+
+				;------------------------------------------------------
+				;Add new student
+				;Receives: Student(ID, Name, Intger Grade, Section No.)
+				;------------------------------------------------------ 
+ 00000809			EnrollStudent PROC, sID:PTR BYTE, sName:PTR BYTE, sGrade:PTR BYTE, sSecNum:PTR BYTE
+
+ 0000080C  E8 FFFFFF98			call CheckStudent
+
+ 00000811  8B 45 14			mov eax, sSecNum
+ 00000814  80 38 31			cmp byte ptr [eax], "1"
+
+ 00000817  74 02			je section1
+ 00000819  EB 0E			jmp section2
+						
+					
+ 0000081B				section1:
+ 0000081B  83 3D 000027AA R		cmp studentCounter1, 20
+	   14
+ 00000822  72 13			jb canadd
+ 00000824  E9 000000AF			jmp Cannotadd
+
+ 00000829				section2: 
+ 00000829  83 3D 000027AE R		cmp studentCounter2, 20
+	   14
+ 00000830  72 05			jb canadd
+ 00000832  E9 000000A1			jmp Cannotadd
+
+ 00000837				canadd:
+ 00000837  FC				cld
+ 00000838  BF 0000005C R		mov edi, OFFSET buffer
+ 0000083D  03 3D 000013E4 R		add edi, szBuffer
+
+ 00000843  8B 75 08			mov esi, sID
+ 00000846  0F B6 0D			movzx ecx, szID
+	   00000020 R
+ 0000084D  01 0D 000013E4 R		add szBuffer, ecx
+ 00000853  F3/ A4			rep movsb
+
+ 00000855  BE 00000019 R		mov esi, offset comma
+ 0000085A  B9 00000001			mov ecx, 1
+ 0000085F  83 05 000013E4 R		add szBuffer, 1
+	   01
+ 00000866  F3/ A4			rep movsb
+
+ 00000868  8B 75 0C			mov esi, sName
+ 0000086B  0F B6 0D			movzx ecx, szName
+	   00000054 R
+ 00000872  01 0D 000013E4 R		add szBuffer, ecx
+ 00000878  F3/ A4			rep movsb
+
+ 0000087A  BE 00000019 R		mov esi, offset comma
+ 0000087F  B9 00000001			mov ecx, 1
+ 00000884  83 05 000013E4 R		add szBuffer, 1
+	   01
+ 0000088B  F3/ A4			rep movsb
+
+ 0000088D  8B 75 10			mov esi, sGrade
+ 00000890  0F B6 0D			movzx ecx, szGrade
+	   00000059 R
+ 00000897  01 0D 000013E4 R		add szBuffer, ecx
+ 0000089D  F3/ A4			rep movsb
+
+ 0000089F  BE 00000019 R		mov esi, offset comma
+ 000008A4  B9 00000001			mov ecx, 1
+ 000008A9  83 05 000013E4 R		add szBuffer, 1
+	   01
+ 000008B0  F3/ A4			rep movsb
+
+ 000008B2  8B 75 14			mov esi, sSecNum
+ 000008B5  B9 00000001			mov ecx, 1
+ 000008BA  83 05 000013E4 R		add szBuffer, 1
+	   01
+ 000008C1  F3/ A4			rep movsb
+
+ 000008C3  BE 00000017 R		mov esi, offset newLine
+ 000008C8  B9 00000002			mov ecx, 2
+ 000008CD  83 05 000013E4 R		add szBuffer, 2
+	   02
+ 000008D4  F3/ A4			rep movsb
+
+ 000008D6  EB 18			jmp donee
+ 000008D8				Cannotadd:
+						mwrite <"Can not Enroll Student",0Dh,0Ah>
+ 00007B87		     1		.data		
+ 00007B87 43 61 6E 20 6E     1		??0004 BYTE "Can not Enroll Student",0Dh,0Ah,0	
+	   6F 74 20 45 6E
+	   72 6F 6C 6C 20
+	   53 74 75 64 65
+	   6E 74 0D 0A 00
+ 000008D8		     1		.code
+ 000008D8  52		     1		push	edx
+ 000008D9  BA 00007B87 R     1		mov	edx,OFFSET ??0004
+ 000008DE  E8 00000000 E     1		call	WriteString
+ 000008E3  5A		     1		pop	edx
+						mwrite <"The Enrollement is cancelled", 0Dh,0Ah>
+ 00007BA0		     1		.data		
+ 00007BA0 54 68 65 20 45     1		??0005 BYTE "The Enrollement is cancelled", 0Dh,0Ah,0	
+	   6E 72 6F 6C 6C
+	   65 6D 65 6E 74
+	   20 69 73 20 63
+	   61 6E 63 65 6C
+	   6C 65 64 0D 0A
+	   00
+ 000008E4		     1		.code
+ 000008E4  52		     1		push	edx
+ 000008E5  BA 00007BA0 R     1		mov	edx,OFFSET ??0005
+ 000008EA  E8 00000000 E     1		call	WriteString
+ 000008EF  5A		     1		pop	edx
+
+ 000008F0				donee:
+					ret
+ 000008F4			EnrollStudent ENDP
+
+				;=================================== update Student PROC  ===================================
+				;-----------------------------------------
+				; [1] check if File is Empty.
+				; [2] Read Row (Split At New Line).
+				; [3] Read The Checked ID and convert it to int .
+				; [4] Read the student ID That exist in the file and conver it to int .
+				; [4] check If Studet is Existing.
+					; a- if it exist:
+						; i. Get Studet Id (Split at First Comma).
+						; ii. Get Studet Name (Split at second Comma).
+						; iii. Get Studet Grade (Split at third Comma).
+						; iv. Get Studet Section .
+						; v. write the Id then write comma in the new buffer.
+						; vi. write the Name then write comma.
+						; vii. write the new Grade then write comma.
+						; viii . in the end write the section number the we add newline.
+					; b- if it not exist:
+						; i. write the Id then write comma.
+						; ii. write the Name then write comma.
+						; iii. write the Grade then write comma.
+						; iv . in the end write the section number the we add newline.
+				; [4] ReWirte The Buffer for the new buffer.
+				;-----------------------------------------
+ 000008F4			UpdateGrade PROC, ID_CHECK:PTR BYTE , New_Grade:PTR BYTE
+ 000008F7  FC				cld
+
+ 000008F8  8B 1D 000013E4 R			mov ebx, szBuffer
+ 000008FE  83 FB 00				cmp ebx, 0
+ 00000901  75 13				jne File_Is_Not_Empty
+						
+ 00000903  BA 00002811 R			mov edx, offset File_Is_Empty
+ 00000908  E8 00000000 E			call writestring
+ 0000090D  E8 00000000 E			call crlf
+						ret
+
+ 00000916					File_Is_Not_Empty:
+
+ 00000916  8B 0D 00003CF5 R			mov ecx, Target_ID_Size
+ 0000091C  8B 75 08				mov esi, ID_CHECK
+ 0000091F  BA 00000000				mov edx, 0
+ 00000924  B8 00000000				mov eax , 0 
+ 00000929  C6 05 00003D15 R			mov TheIntNumber2 , 0 
+	   00
+ 00000930					Read_The_Checked_ID :
+ 00000930  51						push ecx
+ 00000931  8B 04 32					mov eax, [esi + edx]
+ 00000934  8A 0D 00003D15 R				mov cl , TheIntNumber2
+ 0000093A  6B C9 0A					imul ecx , 10
+ 0000093D  2C 30					sub al , '0'
+ 0000093F  02 C8					add cl , al
+ 00000941  88 0D 00003D15 R				mov TheIntNumber2 , cl 
+ 00000947  83 C2 01					add edx ,1 
+ 0000094A  59						pop ecx
+ 0000094B  E2 E3				loop Read_The_Checked_ID
+
+ 0000094D					Main_Loop:
+
+ 0000094D  A1 000013E4 R			mov eax, szBuffer
+ 00000952  39 05 00003C3E R			cmp Row_Offset, eax
+ 00000958  0F 84 0000034A			je End_Of_File
+
+ 0000095E  B9 00000001				mov ecx, 1
+ 00000963  8B 1D 00003C3E R			mov ebx, Row_Offset
+ 00000969  BA 00000000				mov edx, 0
+ 0000096E					Check_NewLine:
+ 0000096E  8A 83 0000005C R				mov al, [Buffer + ebx]
+ 00000974  3A 05 00000017 R				cmp al, newLine
+
+ 0000097A  74 18					je Row_Without_NewLine
+
+ 0000097C  88 82 00003C07 R				mov [Row + edx], al
+ 00000982  83 05 00003C3A R				add Size_Row, 1
+	   01
+ 00000989  83 C3 01					add ebx, 1
+ 0000098C  83 C2 01					add edx, 1
+ 0000098F  83 C1 01					add ecx, 1
+ 00000992  E2 DA				loop Check_NewLine
+
+ 00000994					Row_Without_NewLine:
+
+ 00000994  A1 00003C3A R			mov eax, Size_Row
+ 00000999  83 C0 02				add eax, 2
+ 0000099C  01 05 00003C3E R			add Row_Offset, eax
+
+ 000009A2  8B 35 00003C3A R			mov esi , Size_Row
+ 000009A8  89 35 00003C03 R			mov Temp , esi
+
+
+ 000009AE  8B 0D 00003C03 R			mov ecx, Temp
+ 000009B4  BB 00000000				mov ebx, 0
+ 000009B9  C7 05 00003D11 R			mov TheIntNumber , 0 
+	   00000000
+ 000009C3					Read_Student_Id:
+ 000009C3  51						push ecx
+ 000009C4  8A 83 00003C07 R				mov al, [Row + ebx]
+ 000009CA  3A 05 00000019 R				cmp al, comma
+ 000009D0  74 20					je Finish
+
+ 000009D2  8B 0D 00003D11 R				mov ecx , TheIntNumber
+ 000009D8  6B C9 0A					imul ecx , 10
+ 000009DB  2C 30					sub al , '0'
+ 000009DD  03 C8					add ecx , eax
+ 000009DF  89 0D 00003D11 R				mov TheIntNumber , ecx 
+ 000009E5  83 05 00003C48 R				add Size_checked_Id, 1
+	   01
+ 000009EC  83 C3 01					add ebx, 1
+
+ 000009EF  59						pop ecx
+ 000009F0  E2 D1				loop Read_Student_Id
+
+ 000009F2					Finish: 
+					
+ 000009F2  0F B6 35					movzx esi, TheIntNumber2
+	   00003D15 R
+ 000009F9  3B 35 00003D11 R				cmp esi , TheIntNumber
+ 000009FF  75 02					jne Not_The_Same_ID
+ 00000A01  EB 66					jmp The_Same_ID
+
+ 00000A03					Not_The_Same_ID:
+ 00000A03  8B 0D 00003C3A R				mov ecx, Size_Row
+ 00000A09  8B 1D 00003BFF R				mov ebx, Size_Update_Buffer
+ 00000A0F  BA 00000000					mov edx, 0
+ 00000A14						Write_Row_Of_The_NewBuffer:
+ 00000A14  8A 82 00003C07 R					mov al, [Row + edx]
+ 00000A1A  88 83 00002876 R					mov [Update_Buffer + ebx], al
+ 00000A20  83 05 00003BFF R					add Size_Update_Buffer, 1
+	   01
+ 00000A27  83 C3 01						add ebx, 1
+ 00000A2A  83 C2 01						add edx, 1
+ 00000A2D  E2 E5					loop Write_Row_Of_The_NewBuffer
+
+ 00000A2F  B0 0D					mov al, 0Dh
+ 00000A31  88 83 00002876 R				mov [Update_Buffer + ebx], al
+ 00000A37  83 05 00003BFF R				add Size_Update_Buffer, 1
+	   01
+
+ 00000A3E  83 C3 01					add ebx, 1
+ 00000A41  B0 0A					mov al, 0Ah
+ 00000A43  88 83 00002876 R				mov [Update_Buffer + ebx], al
+ 00000A49  83 05 00003BFF R				add Size_Update_Buffer, 1
+	   01
+										
+ 00000A50  C7 05 00003C3A R				mov Size_Row, 0
+	   00000000
+ 00000A5A  C7 05 00003C48 R				mov Size_checked_Id, 0
+	   00000000
+
+ 00000A64  E9 FFFFFEE4					jmp Main_Loop
+
+ 00000A69					The_Same_ID:
+
+ 00000A69  C7 05 00003CF9 R				mov Row_Is_Updated, 1
+	   00000001
+ 00000A73  C7 05 00003C48 R				mov Size_checked_Id ,0
+	   00000000
+ 00000A7D  8B 1D 00003C3A R				mov ebx ,Size_Row
+ 00000A83  89 1D 00003D0D R				mov Temp2 , ebx
+ 00000A89  C7 05 00003C03 R				mov Temp , 1 
+	   00000001
+ 00000A93  8B 0D 00003C3A R				mov ecx, Size_Row
+ 00000A99  BB 00000000					mov ebx, 0
+ 00000A9E						Read_ID_Name_Grade_Sec :
+ 00000A9E  8A 83 00003C07 R				mov al, [Row + ebx]
+ 00000AA4  3A 05 00000019 R				cmp al, comma
+ 00000AAA  75 0C					jne continue
+ 00000AAC  83 05 00003C03 R				add Temp , 1 
+	   01
+ 00000AB3  83 C3 01					add ebx , 1
+ 00000AB6  E2 E6					loop Read_ID_Name_Grade_Sec
+
+
+ 00000AB8						continue:
+ 00000AB8  3B 1D 00003D0D R				cmp ebx , Temp2
+ 00000ABE  75 05					jne cont 
+ 00000AC0  E9 000000AE					jmp continue5
+ 00000AC5						cont :
+ 00000AC5  83 3D 00003C03 R				cmp temp , 1
+	   01
+ 00000ACC  74 02					je Read_ID
+ 00000ACE  EB 1F					jmp continue2
+ 00000AD0						Read_ID:
+ 00000AD0  8B 15 00003CFD R				mov edx , ID_Counter
+ 00000AD6  88 82 00003C42 R				mov [checked_Id + edx], al
+ 00000ADC  83 05 00003C48 R				add Size_checked_Id, 1
+	   01
+ 00000AE3  83 05 00003CFD R				add ID_Counter, 1
+	   01
+ 00000AEA  83 C3 01					add ebx, 1
+ 00000AED  EB AF					jmp Read_ID_Name_Grade_Sec
+
+
+ 00000AEF						continue2:
+ 00000AEF  83 3D 00003C03 R				cmp temp , 2 
+	   02
+ 00000AF6  74 02					je Read_Name
+ 00000AF8  EB 1F					jmp continue3
+ 00000AFA						Read_Name:
+ 00000AFA  8B 15 00003D01 R				mov edx , Name_Counter
+ 00000B00  88 82 00003C4C R				mov [Names + edx], al
+ 00000B06  83 05 00003C7F R				add Size_Name, 1
+	   01
+ 00000B0D  83 05 00003D01 R				add Name_Counter, 1
+	   01
+ 00000B14  83 C3 01					add ebx, 1
+ 00000B17  EB 85					jmp Read_ID_Name_Grade_Sec
+
+
+ 00000B19						continue3 :
+ 00000B19  83 3D 00003C03 R				cmp temp , 3 
+	   03
+ 00000B20  74 02					je Read_Grade
+ 00000B22  EB 22					jmp continue4
+ 00000B24						Read_Grade :
+ 00000B24  8B 15 00003D05 R				mov edx , Grade_Counter
+ 00000B2A  88 82 00003C83 R				mov [Grades + edx], al
+ 00000B30  83 05 00003CB6 R				add Size_Grades, 1
+	   01
+ 00000B37  83 05 00003D05 R				add Grade_Counter, 1
+	   01
+ 00000B3E  83 C3 01					add ebx, 1
+ 00000B41  E9 FFFFFF58					jmp Read_ID_Name_Grade_Sec
+
+ 00000B46						continue4:
+ 00000B46  83 3D 00003C03 R				cmp temp , 4
+	   04
+ 00000B4D  74 02					je Read_Sec
+ 00000B4F  EB 22					jmp continue5
+ 00000B51						Read_Sec:
+ 00000B51  8B 15 00003D09 R				mov edx , Section_Counter
+ 00000B57  88 82 00003CBA R				mov [SectiOn+edx] , al
+ 00000B5D  83 05 00003CED R				add Size_SectiOn ,1 
+	   01
+ 00000B64  83 C3 01					add ebx , 1
+ 00000B67  83 05 00003D09 R				add Section_Counter , 1
+	   01
+ 00000B6E  E9 FFFFFF2B					jmp Read_ID_Name_Grade_Sec
+
+
+ 00000B73						continue5:
+
+ 00000B73  8B 0D 00003C48 R				mov ecx, Size_checked_Id
+ 00000B79  8B 1D 00003BFF R				mov ebx, Size_Update_Buffer
+ 00000B7F  BA 00000000					mov edx, 0
+ 00000B84						Write_ID:
+ 00000B84  8A 82 00003C42 R					mov al, [checked_Id + edx]
+ 00000B8A  88 83 00002876 R					mov [Update_Buffer + ebx], al
+ 00000B90  83 05 00003BFF R					add Size_Update_Buffer, 1
+	   01
+ 00000B97  83 C3 01						add ebx, 1
+ 00000B9A  83 C2 01						add edx, 1
+ 00000B9D  E2 E5					loop Write_ID
+
+ 00000B9F  A0 00000019 R				mov al , comma
+ 00000BA4  88 83 00002876 R				mov [Update_Buffer + ebx], al
+ 00000BAA  83 05 00003BFF R				add Size_Update_Buffer, 1
+	   01
+ 00000BB1  83 C3 01					add ebx, 1
+
+ 00000BB4  8B 0D 00003C7F R				mov ecx, Size_Name
+ 00000BBA  BA 00000000					mov edx, 0
+ 00000BBF						Write_Name:
+ 00000BBF  8A 82 00003C4C R					mov al, [Names + edx]
+ 00000BC5  88 83 00002876 R					mov [Update_Buffer + ebx], al
+ 00000BCB  83 05 00003BFF R					add Size_Update_Buffer, 1
+	   01
+ 00000BD2  83 C3 01						add ebx, 1
+ 00000BD5  83 C2 01						add edx, 1
+ 00000BD8  E2 E5					loop Write_Name
+
+ 00000BDA  A0 00000019 R				mov al , comma
+ 00000BDF  88 83 00002876 R				mov [Update_Buffer + ebx], al
+ 00000BE5  83 05 00003BFF R				add Size_Update_Buffer, 1
+	   01
+ 00000BEC  83 C3 01					add ebx, 1
+
+ 00000BEF  8B 0D 00003CF1 R				mov ecx, Target_Grade_Size
+ 00000BF5  BA 00000000					mov edx, 0
+ 00000BFA  8B 75 0C					mov esi , New_Grade
+ 00000BFD						Write_Grade:
+ 00000BFD  8A 04 32						mov al, [esi + edx]
+ 00000C00  88 83 00002876 R					mov [Update_Buffer + ebx], al
+ 00000C06  83 05 00003BFF R					add Size_Update_Buffer, 1
+	   01
+ 00000C0D  83 C3 01						add ebx, 1
+ 00000C10  83 C2 01						add edx , 1
+ 00000C13  E2 E8					loop Write_Grade
+
+ 00000C15  A0 00000019 R				mov al , comma
+ 00000C1A  88 83 00002876 R				mov [Update_Buffer + ebx], al
+ 00000C20  83 05 00003BFF R				add Size_Update_Buffer, 1
+	   01
+ 00000C27  83 C3 01					add ebx, 1
+							
+ 00000C2A  8B 0D 00003CED R				mov ecx , Size_SectiOn
+ 00000C30  BA 00000000					mov edx , 0
+ 00000C35						Write_Section:
+ 00000C35  8A 82 00003CBA R				mov al , [SectiOn+edx]
+ 00000C3B  88 83 00002876 R				mov [Update_Buffer + ebx], al
+ 00000C41  83 05 00003BFF R				add Size_Update_Buffer, 1
+	   01
+ 00000C48  83 C3 01					add ebx ,1
+ 00000C4B  83 C2 01					add edx , 1 
+ 00000C4E  E2 E5					loop Write_Section
+
+ 00000C50  B0 0D					mov al, 0Dh
+ 00000C52  88 83 00002876 R				mov [Update_Buffer + ebx], al
+ 00000C58  83 05 00003BFF R				add Size_Update_Buffer, 1
+	   01
+
+ 00000C5F  83 C3 01					add ebx, 1
+ 00000C62  B0 0A					mov al, 0Ah
+ 00000C64  88 83 00002876 R				mov [Update_Buffer + ebx], al
+ 00000C6A  83 05 00003BFF R				add Size_Update_Buffer, 1
+	   01
+										
+ 00000C71  C7 05 00003C3A R				mov Size_Row, 0
+	   00000000
+ 00000C7B  C7 05 00003C48 R				mov Size_checked_Id, 0
+	   00000000
+ 00000C85  C7 05 00003CED R				mov Size_SectiOn , 0
+	   00000000
+ 00000C8F  C7 05 00003C7F R				mov Size_Name,0
+	   00000000
+ 00000C99  C7 05 00003CB6 R				mov Size_Grades , 0
+	   00000000
+
+ 00000CA3  E9 FFFFFCA5					jmp Main_Loop
+							
+ 00000CA8					End_Of_File:
+
+ 00000CA8  83 3D 00003CF9 R				cmp Row_Is_Updated, 1
+	   01
+ 00000CAF  74 27					je student_Is_Updated
+
+ 00000CB1  C7 05 00003C3E R				mov Row_Offset, 0
+	   00000000
+ 00000CBB  C7 05 00003BFF R				mov Size_Update_Buffer, 0
+	   00000000
+
+ 00000CC5  BA 0000283D R				mov edx, offset Student_Not_Found
+ 00000CCA  E8 00000000 E				call writestring
+ 00000CCF  E8 00000000 E				call crlf
+							ret
+
+ 00000CD8					student_Is_Updated:
+
+ 00000CD8  C7 05 00003C3E R				mov Row_Offset, 0
+	   00000000
+
+							mwrite "Successfuly Updated ..."
+ 00007BBF		     1		.data		
+ 00007BBF 53 75 63 63 65     1		??0006 BYTE "Successfuly Updated ...",0	
+	   73 73 66 75 6C
+	   79 20 55 70 64
+	   61 74 65 64 20
+	   2E 2E 2E 00
+ 00000CE2		     1		.code
+ 00000CE2  52		     1		push	edx
+ 00000CE3  BA 00007BBF R     1		mov	edx,OFFSET ??0006
+ 00000CE8  E8 00000000 E     1		call	WriteString
+ 00000CED  5A		     1		pop	edx
+ 00000CEE  E8 00000000 E				call crlf
+
+ 00000CF3  8B 0D 00003BFF R				mov ecx, Size_Update_Buffer
+ 00000CF9  BB 00000000					mov ebx, 0
+ 00000CFE						Rewrite_Buffer:
+ 00000CFE  8A 83 00002876 R					mov al, [Update_Buffer + ebx]
+ 00000D04  88 83 0000005C R					mov [Buffer + ebx], al
+ 00000D0A  83 C3 01						add ebx, 1
+ 00000D0D  E2 EF					loop Rewrite_Buffer
+							
+ 00000D0F  8B 15 00003BFF R				mov edx, Size_Update_Buffer
+ 00000D15  89 15 000013E4 R				mov szBuffer, edx
+ 00000D1B  C7 05 00003BFF R				mov Size_Update_Buffer, 0
+	   00000000
+							ret
+
+ 00000D29			UpdateGrade ENDP
+
+				;-----------------------------------------------------------------
+				; Delete Student PROC
+				; Receives : Offset Student Id : PTR BYTE
+				; Return : No thing
+				;-----------------------------------------------------------------
+
+ 00000D29			DeleteStudent PROC, Target_Id:PTR BYTE, Target_Size:DWORD
+ 00000D2C  FC				cld
+ 00000D2D  8B 1D 000013E4 R			mov ebx, szBuffer
+ 00000D33  83 FB 00				cmp ebx, 0
+ 00000D36  75 13				jne Not_Empty
+						
+ 00000D38  BA 00003D80 R			mov edx, offset Empty_File
+ 00000D3D  E8 00000000 E			call writestring
+ 00000D42  E8 00000000 E			call crlf
+						ret
+
+ 00000D4B					Not_Empty:
+
+ 00000D4B					While_Loop:
+
+ 00000D4B  A1 000013E4 R			mov eax, szBuffer
+ 00000D50  39 05 00003D4D R			cmp Read_Row_Offset, eax
+ 00000D56  0F 84 0000013D			je File_Is_End
+
+ 00000D5C  B9 00000001				mov ecx, 1
+ 00000D61  8B 1D 00003D4D R			mov ebx, Read_Row_Offset
+ 00000D67  BA 00000000				mov edx, 0
+ 00000D6C					Cheak_NewLine:
+ 00000D6C  8A 83 0000005C R				mov al, [Buffer + ebx]
+ 00000D72  3A 05 00000017 R				cmp al, newLine
+ 00000D78  74 18					je Row_Is_Read
+ 00000D7A  88 82 00003D16 R				mov [Read_Row + edx], al
+ 00000D80  83 05 00003D49 R				add Size_Read_Row, 1
+	   01
+ 00000D87  83 C3 01					add ebx, 1
+ 00000D8A  83 C2 01					add edx, 1
+ 00000D8D  83 C1 01					add ecx, 1
+ 00000D90  E2 DA				loop Cheak_NewLine
+
+ 00000D92					Row_Is_Read:
+
+ 00000D92  A1 00003D49 R			mov eax, Size_Read_Row
+ 00000D97  83 C0 02				add eax, 2
+ 00000D9A  01 05 00003D4D R			add Read_Row_Offset, eax
+
+ 00000DA0  8B 0D 00003D49 R			mov ecx, Size_Read_Row
+ 00000DA6  BB 00000000				mov ebx, 0
+ 00000DAB  BA 00000000				mov edx, 0
+ 00000DB0					Read_Studant_Id:
+ 00000DB0  8A 83 00003D16 R				mov al, [Read_Row + ebx]
+ 00000DB6  3A 05 00000019 R				cmp al, comma
+ 00000DBC  74 15					je Break
+ 00000DBE  88 82 00003D51 R				mov [Cheak_Id + edx], al
+ 00000DC4  83 05 00003D57 R				add Size_Cheak_Id, 1
+	   01
+ 00000DCB  83 C2 01					add edx, 1
+ 00000DCE  83 C3 01					add ebx, 1
+ 00000DD1  E2 DD				loop Read_Studant_Id
+
+ 00000DD3					Break:
+
+ 00000DD3  C7 05 00005168 R			mov Target_Int, 0
+	   00000000
+
+						Invoke ConvertStringToInt, Target_Id, Target_Size
+ 00000DE8  A1 000027B2 R			mov eax, intNum
+ 00000DED  A3 00005168 R			mov Target_Int, eax
+
+						Invoke ConvertStringToInt, offset Cheak_Id, Size_Cheak_Id
+ 00000E02  8B 1D 000027B2 R			mov ebx, intNum
+						
+ 00000E08  39 1D 00005168 R			cmp Target_Int, ebx
+ 00000E0E  74 66				je Is_Target
+
+ 00000E10					Not_Target:
+ 00000E10  8B 0D 00003D49 R				mov ecx, Size_Read_Row
+ 00000E16  8B 1D 00005164 R				mov ebx, Size_New_Buffer
+ 00000E1C  BA 00000000					mov edx, 0
+ 00000E21						Write_Row_NewBuffer:
+ 00000E21  8A 82 00003D16 R					mov al, [Read_Row + edx]
+ 00000E27  88 83 00003DDB R					mov [New_Buffer + ebx], al
+ 00000E2D  83 05 00005164 R					add Size_New_Buffer, 1
+	   01
+ 00000E34  83 C3 01						add ebx, 1
+ 00000E37  83 C2 01						add edx, 1
+ 00000E3A  E2 E5					loop Write_Row_NewBuffer
+
+ 00000E3C  B0 0D					mov al, 0Dh
+ 00000E3E  88 83 00003DDB R				mov [New_Buffer + ebx], al
+ 00000E44  83 05 00005164 R				add Size_New_Buffer, 1
+	   01
+
+ 00000E4B  83 C3 01					add ebx, 1
+ 00000E4E  B0 0A					mov al, 0Ah
+ 00000E50  88 83 00003DDB R				mov [New_Buffer + ebx], al
+ 00000E56  83 05 00005164 R				add Size_New_Buffer, 1
+	   01
+										
+ 00000E5D  C7 05 00003D49 R				mov Size_Read_Row, 0
+	   00000000
+ 00000E67  C7 05 00003D57 R				mov Size_Cheak_Id, 0
+	   00000000
+
+ 00000E71  E9 FFFFFED5					jmp While_Loop
+
+ 00000E76					Is_Target:
+
+ 00000E76  C7 05 0000516C R				mov Row_Is_Deleted, 1
+	   00000001
+
+ 00000E80  C7 05 00003D49 R				mov Size_Read_Row, 0
+	   00000000
+ 00000E8A  C7 05 00003D57 R				mov Size_Cheak_Id, 0
+	   00000000
+
+ 00000E94  E9 FFFFFEB2					jmp While_Loop
+							
+ 00000E99					File_Is_End:
+
+ 00000E99  83 3D 0000516C R				cmp Row_Is_Deleted, 1
+	   01
+ 00000EA0  74 27					je Studant_Is_Deleted
+
+ 00000EA2  C7 05 00003D4D R				mov Read_Row_Offset, 0
+	   00000000
+ 00000EAC  C7 05 00005164 R				mov Size_New_Buffer, 0
+	   00000000
+
+ 00000EB6  BA 00003DA7 R				mov edx, offset Studant_Not_Found
+ 00000EBB  E8 00000000 E				call writestring
+ 00000EC0  E8 00000000 E				call crlf
+							ret
+
+ 00000EC9					Studant_Is_Deleted:
+
+ 00000EC9  C7 05 0000516C R				mov Row_Is_Deleted, 0
+	   00000000
+ 00000ED3  C7 05 00003D4D R				mov Read_Row_Offset, 0
+	   00000000
+
+
+ 00000EDD  B4 01					mov ah, 1
+							;mwrite "Successfuly Deleted ..."
+							;call crlf
+
+ 00000EDF  83 3D 00005164 R				cmp Size_New_Buffer, 0
+	   00
+ 00000EE6  74 36					je Only_One_Studant
+
+ 00000EE8  8B 0D 00005164 R				mov ecx, Size_New_Buffer
+ 00000EEE  BB 00000000					mov ebx, 0
+ 00000EF3						Rwrite_Buffer:
+ 00000EF3  8A 83 00003DDB R					mov al, [New_Buffer + ebx]
+ 00000EF9  88 83 0000005C R					mov [Buffer + ebx], al
+ 00000EFF  83 C3 01						add ebx, 1
+ 00000F02  E2 EF					loop Rwrite_Buffer
+							
+ 00000F04  8B 15 00005164 R				mov edx, Size_New_Buffer
+ 00000F0A  89 15 000013E4 R				mov szBuffer, edx
+ 00000F10  C7 05 00005164 R				mov Size_New_Buffer, 0
+	   00000000
+							ret
+
+ 00000F1E						Only_One_Studant:
+ 00000F1E  C7 05 000013E4 R				mov szBuffer, 0
+	   00000000
+ 00000F28  C7 05 00005164 R				mov Size_New_Buffer, 0
+	   00000000
+							ret
+ 00000F36			DeleteStudent ENDP
+
+				;-------------------------------------------------
+				;Display Student Data by ID
+				;Recieves: Student ID
+				;-------------------------------------------------
+ 00000F36			DisplayStudentData PROC sID:DWORD
+ 00000F39  BE 0000005C R		mov esi, offset buffer
+ 00000F3E  8B 0D 000013E4 R		mov ecx, szBuffer
+
+ 00000F44  83 F9 00			cmp ecx, 0
+ 00000F47  0F 84 00000130		je notFound
+
+ 00000F4D				checkAllRec:
+ 00000F4D  51					push ecx
+ 00000F4E  BF 00002774 R			mov edi, offset Rec
+ 00000F53  B0 0D				mov al, 0Dh
+ 00000F55  B9 00000032				mov ecx, 50
+ 00000F5A					getRec:
+ 00000F5A  38 06					cmp byte ptr [esi], al
+ 00000F5C  74 08					je RecReadDone
+ 00000F5E  8A 1E					mov bl, byte ptr [esi]
+ 00000F60  88 1F					mov byte ptr [edi], bl
+ 00000F62  46						inc esi
+ 00000F63  47						inc edi
+ 00000F64  E2 F4				loop getRec
+
+ 00000F66					RecReadDone:
+ 00000F66  83 C6 02				add esi, 2
+ 00000F69  56					push esi
+ 00000F6A  83 E9 32				sub ecx, 50
+ 00000F6D  F7 D9				neg ecx
+ 00000F6F  89 0D 000027A6 R			mov szRec, ecx
+
+						;check is the same id or not
+ 00000F75  BE 00002774 R			mov esi, offset Rec
+ 00000F7A  A0 00000019 R			mov al, comma
+ 00000F7F  8B 0D 000027A6 R			mov ecx, szRec
+ 00000F85					checkID:
+ 00000F85  38 06					cmp byte ptr [esi], al
+ 00000F87  74 03					je outCheckID
+ 00000F89  46						inc esi
+ 00000F8A  E2 F9				loop checkID
+ 00000F8C					outCheckID:
+ 00000F8C  2B 0D 000027A6 R			sub ecx, szRec
+ 00000F92  F7 D9				neg ecx
+ 00000F94  8B D1				mov edx, ecx
+ 00000F96  BE 00002774 R			mov esi, offset rec
+						invoke ConvertStringToInt,
+							esi, edx
+ 00000FA2  A1 000027B2 R			mov eax, intNum
+ 00000FA7  3B 45 08				cmp eax, sID
+ 00000FAA  75 07				jne notID
+ 00000FAC  BB 00000001				mov ebx, 1
+ 00000FB1  EB 05				jmp ID
+ 00000FB3					notID:
+ 00000FB3  BB 00000000				mov ebx, 0
+ 00000FB8					ID:
+ 00000FB8  5E					pop esi
+ 00000FB9  59					pop ecx
+ 00000FBA  2B 0D 000027A6 R			sub ecx, szRec
+ 00000FC0  83 E9 02				sub ecx, 2
+ 00000FC3  83 FB 01				cmp ebx, 1
+ 00000FC6  74 0A				je endCheckAllRec
+ 00000FC8  83 F9 00				cmp ecx, 0
+ 00000FCB  74 05				je endCheckAllRec
+ 00000FCD  E9 FFFFFF7B			jmp checkAllRec
+ 00000FD2				endCheckAllRec:
+
+ 00000FD2  83 FB 01			cmp ebx, 1
+ 00000FD5  0F 85 000000A2		jne notFound
+ 00000FDB				Found:
+ 00000FDB  BE 00002774 R			mov esi, offset Rec
+ 00000FE0  BF 00002774 R			mov edi, offset Rec
+ 00000FE5  8B 0D 000027A6 R			mov ecx, szRec
+ 00000FEB					coutID:
+ 00000FEB  80 3F 2C					cmp byte ptr [edi], ','
+ 00000FEE  74 03					je outCoutID
+ 00000FF0  47						inc edi
+ 00000FF1  E2 F8				loop coutID
+ 00000FF3					outCoutID:
+ 00000FF3  C6 07 00				mov byte ptr [edi], 0
+ 00000FF6  8B D6				mov edx, esi
+						mWrite "Student ID: "
+ 00007BD7		     1		.data		
+ 00007BD7 53 74 75 64 65     1		??0007 BYTE "Student ID: ",0	
+	   6E 74 20 49 44
+	   3A 20 00
+ 00000FF8		     1		.code
+ 00000FF8  52		     1		push	edx
+ 00000FF9  BA 00007BD7 R     1		mov	edx,OFFSET ??0007
+ 00000FFE  E8 00000000 E     1		call	WriteString
+ 00001003  5A		     1		pop	edx
+ 00001004  E8 00000000 E			call writestring
+ 00001009  E8 00000000 E			call crlf
+ 0000100E  47					inc edi
+ 0000100F  8B F7				mov esi, edi
+
+ 00001011					coutName:
+ 00001011  80 3F 2C					cmp byte ptr [edi], ','
+ 00001014  74 03					je outCoutName
+ 00001016  47						inc edi
+ 00001017  E2 F8				loop coutName
+ 00001019					outCoutName:
+ 00001019  C6 07 00				mov byte ptr [edi], 0
+ 0000101C  8B D6				mov edx, esi
+						mWrite "Student Name: "
+ 00007BE4		     1		.data		
+ 00007BE4 53 74 75 64 65     1		??0008 BYTE "Student Name: ",0	
+	   6E 74 20 4E 61
+	   6D 65 3A 20 00
+ 0000101E		     1		.code
+ 0000101E  52		     1		push	edx
+ 0000101F  BA 00007BE4 R     1		mov	edx,OFFSET ??0008
+ 00001024  E8 00000000 E     1		call	WriteString
+ 00001029  5A		     1		pop	edx
+ 0000102A  E8 00000000 E			call writestring
+ 0000102F  E8 00000000 E			call crlf
+ 00001034  47					inc edi
+ 00001035  8B F7				mov esi, edi
+
+ 00001037					coutGrade:
+ 00001037  80 3F 2C					cmp byte ptr [edi], ','
+ 0000103A  74 03					je outCoutGrade
+ 0000103C  47						inc edi
+ 0000103D  E2 F8				loop coutGrade
+ 0000103F					outCoutGrade:
+ 0000103F  C6 07 00				mov byte ptr [edi], 0
+ 00001042  8B D6				mov edx, esi
+						mWrite "Student Grade: "
+ 00007BF3		     1		.data		
+ 00007BF3 53 74 75 64 65     1		??0009 BYTE "Student Grade: ",0	
+	   6E 74 20 47 72
+	   61 64 65 3A 20
+	   00
+ 00001044		     1		.code
+ 00001044  52		     1		push	edx
+ 00001045  BA 00007BF3 R     1		mov	edx,OFFSET ??0009
+ 0000104A  E8 00000000 E     1		call	WriteString
+ 0000104F  5A		     1		pop	edx
+ 00001050  E8 00000000 E			call writestring
+ 00001055  E8 00000000 E			call crlf
+ 0000105A  47					inc edi
+ 0000105B  8B F7				mov esi, edi
+						
+ 0000105D  47					inc edi
+ 0000105E  C6 07 00				mov byte ptr [edi], 0
+ 00001061  8B D6				mov edx, esi
+						mWrite "Student Section: "
+ 00007C03		     1		.data		
+ 00007C03 53 74 75 64 65     1		??000A BYTE "Student Section: ",0	
+	   6E 74 20 53 65
+	   63 74 69 6F 6E
+	   3A 20 00
+ 00001063		     1		.code
+ 00001063  52		     1		push	edx
+ 00001064  BA 00007C03 R     1		mov	edx,OFFSET ??000A
+ 00001069  E8 00000000 E     1		call	WriteString
+ 0000106E  5A		     1		pop	edx
+ 0000106F  E8 00000000 E			call writestring
+ 00001074  E8 00000000 E			call crlf
+					ret
+
+ 0000107D				notFound:
+						mWrite <"Not Found ID", 0Dh, 0Ah>
+ 00007C15		     1		.data		
+ 00007C15 4E 6F 74 20 46     1		??000B BYTE "Not Found ID", 0Dh, 0Ah,0	
+	   6F 75 6E 64 20
+	   49 44 0D 0A 00
+ 0000107D		     1		.code
+ 0000107D  52		     1		push	edx
+ 0000107E  BA 00007C15 R     1		mov	edx,OFFSET ??000B
+ 00001083  E8 00000000 E     1		call	WriteString
+ 00001088  5A		     1		pop	edx
+					ret
+ 0000108D			DisplayStudentData ENDP
+
+				;--------------------------------------
+				;Open Database File
+				;Receives: file name parameter
+				;Returns: EAX contains buffer size
+				;--------------------------------------
+ 0000108D			OpenDatabase PROC uses eax edx ecx, fileN:PTR BYTE, bKey:BYTE
+					INVOKE CREATEFILE, 
+						fileN, GENERIC_READ, DO_NOT_SHARE, NULL, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0
+
+ 000010AD  A3 00000013 R		mov fileHandle, eax
+ 000010B2  BA 0000005C R		mov edx, OFFSET buffer
+ 000010B7  B9 00001388			mov ecx, BUFFER_SIZE
+ 000010BC  E8 00000000 E		call READFROMFILE
+ 000010C1  A3 000013E4 R		mov szBuffer, eax
+					
+ 000010C6  83 3D 000013E4 R		cmp szBuffer, 0
+	   00
+ 000010CD  74 59			je close
+					
+ 000010CF  FF 0D 000013E4 R		dec szBuffer
+
+ 000010D5  B8 0000005C R		mov eax, offset buffer
+ 000010DA  03 05 000013E4 R		add eax, szBuffer
+ 000010E0  8A 10			mov dl, byte ptr [eax]
+ 000010E2  80 F2 F0			xor dl, 11110000b
+ 000010E5  3A 55 0C			cmp dl, bKey
+ 000010E8  75 28			jne notKey
+
+ 000010EA  BA 0000005C R		mov edx, offset buffer
+ 000010EF  8B 0D 000013E4 R		mov ecx, szBuffer
+ 000010F5				decrypt:
+ 000010F5  8A 02				mov al, [edx]
+ 000010F7  32 45 0C				xor al, bKey
+ 000010FA  88 02				mov [edx], al
+ 000010FC  42					inc edx
+ 000010FD  E2 F6			loop decrypt
+
+					mWrite "Database Open Successfully!"
+ 00007C24		     1		.data		
+ 00007C24 44 61 74 61 62     1		??000C BYTE "Database Open Successfully!",0	
+	   61 73 65 20 4F
+	   70 65 6E 20 53
+	   75 63 63 65 73
+	   73 66 75 6C 6C
+	   79 21 00
+ 000010FF		     1		.code
+ 000010FF  52		     1		push	edx
+ 00001100  BA 00007C24 R     1		mov	edx,OFFSET ??000C
+ 00001105  E8 00000000 E     1		call	WriteString
+ 0000110A  5A		     1		pop	edx
+ 0000110B  E8 00000000 E		call crlf
+ 00001110  EB 16			jmp close
+
+ 00001112				notKey:
+					mWrite "Incorrect Database Key!"
+ 00007C40		     1		.data		
+ 00007C40 49 6E 63 6F 72     1		??000D BYTE "Incorrect Database Key!",0	
+	   72 65 63 74 20
+	   44 61 74 61 62
+	   61 73 65 20 4B
+	   65 79 21 00
+ 00001112		     1		.code
+ 00001112  52		     1		push	edx
+ 00001113  BA 00007C40 R     1		mov	edx,OFFSET ??000D
+ 00001118  E8 00000000 E     1		call	WriteString
+ 0000111D  5A		     1		pop	edx
+ 0000111E  E8 00000000 E		call crlf
+ 00001123  BB 00000001			mov ebx, 1
+
+ 00001128				close:
+ 00001128  A1 00000013 R		mov eax, fileHandle
+ 0000112D  E8 00000000 E		call CLOSEFILE
+
+					ret
+ 00001139			OpenDatabase ENDP
+
+				;-------------------------------------
+				;Receives: file name parameter
+				;-------------------------------------
+ 00001139			SaveDatabase PROC, fileN:PTR BYTE
+					INVOKE CREATEFILE, 
+						fileN, GENERIC_WRITE, DO_NOT_SHARE, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0
+
+ 00001156  A3 00000013 R		mov fileHandle, eax
+ 0000115B  BA 0000005C R		mov edx, OFFSET buffer
+ 00001160  8B 0D 000013E4 R		mov ecx, szBuffer
+ 00001166  E8 00000000 E		call WRITETOFILE
+
+ 0000116B  A1 00000013 R		mov eax, fileHandle
+ 00001170  E8 00000000 E		call CLOSEFILE
+
+					ret
+ 00001179			SaveDatabase ENDP
+
+				;------------------------------------------------
+				;Receives: file name parameter and Database Key
+				;------------------------------------------------
+ 00001179			SaveDatabaseWithKey PROC, fileN:PTR BYTE, bKey:BYTE
+					INVOKE CREATEFILE, 
+						fileN, GENERIC_WRITE, DO_NOT_SHARE, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0
+ 00001196  A3 00000013 R		mov fileHandle, eax
+
+ 0000119B  83 3D 000013E4 R		cmp szBuffer, 0
+	   00
+ 000011A2  74 3E			je close
+
+ 000011A4  B8 0000005C R		mov eax, offset buffer
+ 000011A9  03 05 000013E4 R		add eax, szBuffer
+ 000011AF  8A 55 0C			mov dl, bKey
+ 000011B2  80 F2 F0			xor dl, 11110000b
+ 000011B5  88 10			mov byte ptr [eax], dl
+
+ 000011B7  BA 0000005C R		mov edx, offset buffer
+ 000011BC  8B 0D 000013E4 R		mov ecx, szBuffer
+ 000011C2				encrypt:
+ 000011C2  8A 02				mov al, [edx]
+ 000011C4  32 45 0C				xor al, bKey
+ 000011C7  88 02				mov [edx], al
+ 000011C9  42					inc edx
+ 000011CA  E2 F6			loop encrypt
+
+ 000011CC  A1 00000013 R		mov eax, fileHandle
+ 000011D1  BA 0000005C R		mov edx, OFFSET buffer
+ 000011D6  8B 0D 000013E4 R		mov ecx, szBuffer
+ 000011DC  41				inc ecx
+ 000011DD  E8 00000000 E		call WRITETOFILE
+
+ 000011E2				close:
+ 000011E2  A1 00000013 R		mov eax, fileHandle
+ 000011E7  E8 00000000 E		call CLOSEFILE
+
+					ret
+ 000011F0			SaveDatabaseWithKey ENDP
+
+ 000011F0			main proc
+ 000011F0  B8 00000000			mov eax, 0
+					mWrite "Please Enter Database Key:"
+ 00007C58		     1		.data		
+ 00007C58 50 6C 65 61 73     1		??000E BYTE "Please Enter Database Key:",0	
+	   65 20 45 6E 74
+	   65 72 20 44 61
+	   74 61 62 61 73
+	   65 20 4B 65 79
+	   3A 00
+ 000011F5		     1		.code
+ 000011F5  52		     1		push	edx
+ 000011F6  BA 00007C58 R     1		mov	edx,OFFSET ??000E
+ 000011FB  E8 00000000 E     1		call	WriteString
+ 00001200  5A		     1		pop	edx
+ 00001201  E8 00000000 E		call readchar
+ 00001206  A2 00000000 R		mov Key, al
+ 0000120B  B0 2A			mov al, '*'
+ 0000120D  E8 00000000 E		call writechar
+ 00001212  E8 00000000 E		call crlf
+					invoke OpenDatabase, 
+						ADDR fileName, Key
+
+ 00001227  83 FB 01			cmp ebx, 1
+ 0000122A  0F 84 00000268		je closeApp
+
+ 00001230				begin:
+						mWrite <"=================================", 0Dh, 0Ah>
+ 00007C73		     1		.data		
+ 00007C73 3D 3D 3D 3D 3D     1		??000F BYTE "=================================", 0Dh, 0Ah,0	
+	   3D 3D 3D 3D 3D
+	   3D 3D 3D 3D 3D
+	   3D 3D 3D 3D 3D
+	   3D 3D 3D 3D 3D
+	   3D 3D 3D 3D 3D
+	   3D 3D 3D 0D 0A
+	   00
+ 00001230		     1		.code
+ 00001230  52		     1		push	edx
+ 00001231  BA 00007C73 R     1		mov	edx,OFFSET ??000F
+ 00001236  E8 00000000 E     1		call	WriteString
+ 0000123B  5A		     1		pop	edx
+						mwrite <"[1] Enroll Student.", 0Dh, 0Ah>
+ 00007C97		     1		.data		
+ 00007C97 5B 31 5D 20 45     1		??0010 BYTE "[1] Enroll Student.", 0Dh, 0Ah,0	
+	   6E 72 6F 6C 6C
+	   20 53 74 75 64
+	   65 6E 74 2E 0D
+	   0A 00
+ 0000123C		     1		.code
+ 0000123C  52		     1		push	edx
+ 0000123D  BA 00007C97 R     1		mov	edx,OFFSET ??0010
+ 00001242  E8 00000000 E     1		call	WriteString
+ 00001247  5A		     1		pop	edx
+						mwrite <"[2] Update Grade.", 0Dh, 0Ah>
+ 00007CAD		     1		.data		
+ 00007CAD 5B 32 5D 20 55     1		??0011 BYTE "[2] Update Grade.", 0Dh, 0Ah,0	
+	   70 64 61 74 65
+	   20 47 72 61 64
+	   65 2E 0D 0A 00
+ 00001248		     1		.code
+ 00001248  52		     1		push	edx
+ 00001249  BA 00007CAD R     1		mov	edx,OFFSET ??0011
+ 0000124E  E8 00000000 E     1		call	WriteString
+ 00001253  5A		     1		pop	edx
+						mwrite <"[3] Delete Student.", 0Dh, 0Ah>
+ 00007CC1		     1		.data		
+ 00007CC1 5B 33 5D 20 44     1		??0012 BYTE "[3] Delete Student.", 0Dh, 0Ah,0	
+	   65 6C 65 74 65
+	   20 53 74 75 64
+	   65 6E 74 2E 0D
+	   0A 00
+ 00001254		     1		.code
+ 00001254  52		     1		push	edx
+ 00001255  BA 00007CC1 R     1		mov	edx,OFFSET ??0012
+ 0000125A  E8 00000000 E     1		call	WriteString
+ 0000125F  5A		     1		pop	edx
+						mwrite <"[4] Display Student Data.", 0Dh, 0Ah>
+ 00007CD7		     1		.data		
+ 00007CD7 5B 34 5D 20 44     1		??0013 BYTE "[4] Display Student Data.", 0Dh, 0Ah,0	
+	   69 73 70 6C 61
+	   79 20 53 74 75
+	   64 65 6E 74 20
+	   44 61 74 61 2E
+	   0D 0A 00
+ 00001260		     1		.code
+ 00001260  52		     1		push	edx
+ 00001261  BA 00007CD7 R     1		mov	edx,OFFSET ??0013
+ 00001266  E8 00000000 E     1		call	WriteString
+ 0000126B  5A		     1		pop	edx
+						mwrite <"[5] Display Top 5 Students.", 0Dh, 0Ah>
+ 00007CF3		     1		.data		
+ 00007CF3 5B 35 5D 20 44     1		??0014 BYTE "[5] Display Top 5 Students.", 0Dh, 0Ah,0	
+	   69 73 70 6C 61
+	   79 20 54 6F 70
+	   20 35 20 53 74
+	   75 64 65 6E 74
+	   73 2E 0D 0A 00
+ 0000126C		     1		.code
+ 0000126C  52		     1		push	edx
+ 0000126D  BA 00007CF3 R     1		mov	edx,OFFSET ??0014
+ 00001272  E8 00000000 E     1		call	WriteString
+ 00001277  5A		     1		pop	edx
+						mwrite <"[6] Generate Section Report.", 0Dh, 0Ah>
+ 00007D11		     1		.data		
+ 00007D11 5B 36 5D 20 47     1		??0015 BYTE "[6] Generate Section Report.", 0Dh, 0Ah,0	
+	   65 6E 65 72 61
+	   74 65 20 53 65
+	   63 74 69 6F 6E
+	   20 52 65 70 6F
+	   72 74 2E 0D 0A
+	   00
+ 00001278		     1		.code
+ 00001278  52		     1		push	edx
+ 00001279  BA 00007D11 R     1		mov	edx,OFFSET ??0015
+ 0000127E  E8 00000000 E     1		call	WriteString
+ 00001283  5A		     1		pop	edx
+						mwrite <"[7] Exit.", 0Dh, 0Ah>
+ 00007D30		     1		.data		
+ 00007D30 5B 37 5D 20 45     1		??0016 BYTE "[7] Exit.", 0Dh, 0Ah,0	
+	   78 69 74 2E 0D
+	   0A 00
+ 00001284		     1		.code
+ 00001284  52		     1		push	edx
+ 00001285  BA 00007D30 R     1		mov	edx,OFFSET ??0016
+ 0000128A  E8 00000000 E     1		call	WriteString
+ 0000128F  5A		     1		pop	edx
+						mWrite <"=================================", 0Dh, 0Ah>
+ 00007D3C		     1		.data		
+ 00007D3C 3D 3D 3D 3D 3D     1		??0017 BYTE "=================================", 0Dh, 0Ah,0	
+	   3D 3D 3D 3D 3D
+	   3D 3D 3D 3D 3D
+	   3D 3D 3D 3D 3D
+	   3D 3D 3D 3D 3D
+	   3D 3D 3D 3D 3D
+	   3D 3D 3D 0D 0A
+	   00
+ 00001290		     1		.code
+ 00001290  52		     1		push	edx
+ 00001291  BA 00007D3C R     1		mov	edx,OFFSET ??0017
+ 00001296  E8 00000000 E     1		call	WriteString
+ 0000129B  5A		     1		pop	edx
+						mwrite "Please select: "
+ 00007D60		     1		.data		
+ 00007D60 50 6C 65 61 73     1		??0018 BYTE "Please select: ",0	
+	   65 20 73 65 6C
+	   65 63 74 3A 20
+	   00
+ 0000129C		     1		.code
+ 0000129C  52		     1		push	edx
+ 0000129D  BA 00007D60 R     1		mov	edx,OFFSET ??0018
+ 000012A2  E8 00000000 E     1		call	WriteString
+ 000012A7  5A		     1		pop	edx
+ 000012A8  E8 00000000 E			call readdec
+ 000012AD  83 F8 01				cmp eax, 1
+ 000012B0  74 3B				je l1
+ 000012B2  83 F8 02				cmp eax, 2
+ 000012B5  0F 84 000000EF			je l2
+ 000012BB  83 F8 03				cmp eax, 3
+ 000012BE  0F 84 00000136			je l3
+ 000012C4  83 F8 04				cmp eax, 4
+ 000012C7  0F 84 0000016C			je l4
+ 000012CD  83 F8 05				cmp eax, 5
+ 000012D0  0F 84 0000017F			je l5
+ 000012D6  83 F8 06				cmp eax, 6
+ 000012D9  0F 84 00000180			je l6
+ 000012DF  83 F8 07				cmp eax, 7
+ 000012E2  0F 84 000001A0			je quit
+ 000012E8  E9 FFFFFF43				jmp begin
+
+ 000012ED				l1:;------------------------------------------------------add new student
+						mWrite <"================", 0Dh, 0Ah>
+ 00007D70		     1		.data		
+ 00007D70 3D 3D 3D 3D 3D     1		??0019 BYTE "================", 0Dh, 0Ah,0	
+	   3D 3D 3D 3D 3D
+	   3D 3D 3D 3D 3D
+	   3D 0D 0A 00
+ 000012ED		     1		.code
+ 000012ED  52		     1		push	edx
+ 000012EE  BA 00007D70 R     1		mov	edx,OFFSET ??0019
+ 000012F3  E8 00000000 E     1		call	WriteString
+ 000012F8  5A		     1		pop	edx
+						mwrite <"ADD NEW STUDENT", 0Dh, 0Ah>
+ 00007D83		     1		.data		
+ 00007D83 41 44 44 20 4E     1		??001A BYTE "ADD NEW STUDENT", 0Dh, 0Ah,0	
+	   45 57 20 53 54
+	   55 44 45 4E 54
+	   0D 0A 00
+ 000012F9		     1		.code
+ 000012F9  52		     1		push	edx
+ 000012FA  BA 00007D83 R     1		mov	edx,OFFSET ??001A
+ 000012FF  E8 00000000 E     1		call	WriteString
+ 00001304  5A		     1		pop	edx
+						mWrite <"================", 0Dh, 0Ah>
+ 00007D95		     1		.data		
+ 00007D95 3D 3D 3D 3D 3D     1		??001B BYTE "================", 0Dh, 0Ah,0	
+	   3D 3D 3D 3D 3D
+	   3D 3D 3D 3D 3D
+	   3D 0D 0A 00
+ 00001305		     1		.code
+ 00001305  52		     1		push	edx
+ 00001306  BA 00007D95 R     1		mov	edx,OFFSET ??001B
+ 0000130B  E8 00000000 E     1		call	WriteString
+ 00001310  5A		     1		pop	edx
+						mwrite "Student ID:"
+ 00007DA8		     1		.data		
+ 00007DA8 53 74 75 64 65     1		??001C BYTE "Student ID:",0	
+	   6E 74 20 49 44
+	   3A 00
+ 00001311		     1		.code
+ 00001311  52		     1		push	edx
+ 00001312  BA 00007DA8 R     1		mov	edx,OFFSET ??001C
+ 00001317  E8 00000000 E     1		call	WriteString
+ 0000131C  5A		     1		pop	edx
+ 0000131D  BA 0000001A R			mov edx, OFFSET studentID
+ 00001322  B9 00000006				mov ecx, LENGTHOF studentID
+ 00001327  E8 00000000 E			call readstring
+ 0000132C  A2 00000020 R			mov szID, al
+						mwrite "Student Name:"
+ 00007DB4		     1		.data		
+ 00007DB4 53 74 75 64 65     1		??001D BYTE "Student Name:",0	
+	   6E 74 20 4E 61
+	   6D 65 3A 00
+ 00001331		     1		.code
+ 00001331  52		     1		push	edx
+ 00001332  BA 00007DB4 R     1		mov	edx,OFFSET ??001D
+ 00001337  E8 00000000 E     1		call	WriteString
+ 0000133C  5A		     1		pop	edx
+ 0000133D  BA 00000021 R			mov edx, OFFSET studentName
+ 00001342  B9 00000033				mov ecx, LENGTHOF studentName
+ 00001347  E8 00000000 E			call readstring
+ 0000134C  A2 00000054 R			mov szName, al
+						mwrite "Student Grade:"
+ 00007DC2		     1		.data		
+ 00007DC2 53 74 75 64 65     1		??001E BYTE "Student Grade:",0	
+	   6E 74 20 47 72
+	   61 64 65 3A 00
+ 00001351		     1		.code
+ 00001351  52		     1		push	edx
+ 00001352  BA 00007DC2 R     1		mov	edx,OFFSET ??001E
+ 00001357  E8 00000000 E     1		call	WriteString
+ 0000135C  5A		     1		pop	edx
+ 0000135D  BA 00000055 R			mov edx, OFFSET grade
+ 00001362  B9 00000004				mov ecx, LENGTHOF grade
+ 00001367  E8 00000000 E			call readstring
+ 0000136C  A2 00000059 R			mov szGrade, al
+						mwrite "Student Section No.:"
+ 00007DD1		     1		.data		
+ 00007DD1 53 74 75 64 65     1		??001F BYTE "Student Section No.:",0	
+	   6E 74 20 53 65
+	   63 74 69 6F 6E
+	   20 4E 6F 2E 3A
+	   00
+ 00001371		     1		.code
+ 00001371  52		     1		push	edx
+ 00001372  BA 00007DD1 R     1		mov	edx,OFFSET ??001F
+ 00001377  E8 00000000 E     1		call	WriteString
+ 0000137C  5A		     1		pop	edx
+ 0000137D  BA 0000005A R			mov edx, OFFSET secNumber
+ 00001382  B9 00000002				mov ecx, LENGTHOF secNumber
+ 00001387  E8 00000000 E			call readstring
+
+
+						invoke EnrollStudent, 
+							addr studentID, addr studentName, addr grade, addr secNumber
+
+ 000013A5  E9 FFFFFE86			jmp begin
+					
+ 000013AA				l2:;------------------------------------------------------update student grade
+ 000013AA  BA 000027C4 R			mov edx, offset Get_Student_Id 
+ 000013AF  E8 00000000 E			call writestring
+
+ 000013B4  BA 0000001A R			mov edx , offset studentID
+ 000013B9  B9 00000006				mov ecx, LENGTHOF studentID
+ 000013BE  E8 00000000 E			call readstring
+ 000013C3  A3 00003CF5 R			mov Target_ID_Size , eax
+
+ 000013C8  BA 000027E9 R			mov edx , offset Get_Student_Name
+ 000013CD  E8 00000000 E			call writestring 
+
+
+ 000013D2  BA 00000055 R			mov edx , offset grade
+ 000013D7  B9 00000004				mov ecx , LENGTHOF grade
+ 000013DC  E8 00000000 E			call readstring 
+ 000013E1  A3 00003CF1 R			mov Target_Grade_Size ,eax 
+
+
+						invoke UpdateGrade,
+							offset studentID , offset grade
+
+ 000013F5  E9 FFFFFE36			jmp begin
+
+ 000013FA				l3:;------------------------------------------------------delete student
+ 000013FA  BA 00003D5B R			mov edx, offset Get_Studant_Id
+ 000013FF  E8 00000000 E			call writestring
+
+ 00001404  BA 0000001A R			mov edx, OFFSET studentID
+ 00001409  B9 00000006				mov ecx, LENGTHOF studentID
+ 0000140E  E8 00000000 E			call readstring
+
+						invoke DeleteStudent,
+							offset studentID, eax
+
+ 0000141E  80 FC 01				cmp ah, 1
+ 00001421  75 11				jne outDelete
+						mWrite "Successfuly Deleted ..."
+ 00007DE6		     1		.data		
+ 00007DE6 53 75 63 63 65     1		??0020 BYTE "Successfuly Deleted ...",0	
+	   73 73 66 75 6C
+	   79 20 44 65 6C
+	   65 74 65 64 20
+	   2E 2E 2E 00
+ 00001423		     1		.code
+ 00001423  52		     1		push	edx
+ 00001424  BA 00007DE6 R     1		mov	edx,OFFSET ??0020
+ 00001429  E8 00000000 E     1		call	WriteString
+ 0000142E  5A		     1		pop	edx
+ 0000142F  E8 00000000 E			call crlf
+
+ 00001434				outDelete:
+ 00001434  E9 FFFFFDF7			jmp begin
+
+ 00001439				l4:;------------------------------------------------------display student data
+						mWrite "Please Enter Student ID:"
+ 00007DFE		     1		.data		
+ 00007DFE 50 6C 65 61 73     1		??0021 BYTE "Please Enter Student ID:",0	
+	   65 20 45 6E 74
+	   65 72 20 53 74
+	   75 64 65 6E 74
+	   20 49 44 3A 00
+ 00001439		     1		.code
+ 00001439  52		     1		push	edx
+ 0000143A  BA 00007DFE R     1		mov	edx,OFFSET ??0021
+ 0000143F  E8 00000000 E     1		call	WriteString
+ 00001444  5A		     1		pop	edx
+ 00001445  E8 00000000 E			call readdec
+
+						invoke DisplayStudentData,
+							eax
+ 00001450  E9 FFFFFDDB			jmp begin
+
+ 00001455				l5:;------------------------------------------------------display top 5 students
+ 00001455  E8 FFFFF207				call DisplayTop5
+ 0000145A  E9 FFFFFDD1			jmp begin
+
+ 0000145F				l6:;------------------------------------------------------generate section report
+ 0000145F  BA 0000519A R			mov edx, offset Get_Sec_Number
+ 00001464  E8 00000000 E			call writestring
+
+ 00001469  E8 00000000 E			call readchar
+ 0000146E  E8 00000000 E			call writechar
+ 00001473  A2 0000523A R			mov Read_Sec_Number, al
+						Invoke Generate_Section_Report, Read_Sec_Number
+ 00001483  E9 FFFFFDA8			jmp begin
+
+ 00001488				quit:
+					INVOKE SaveDatabaseWithKey,
+						ADDR fileName, Key
+					
+ 00001498				closeApp:
+					exit
+ 0000149F			main endp
+
+				end main
+Microsoft (R) Macro Assembler Version 12.00.21005.1	    05/02/18 13:23:25
+main.asm						     Symbols 2 - 1
+
+
+
+
+Macros:
+
+                N a m e                 Type
+
+IsDefined  . . . . . . . . . . .	Func
+Startup  . . . . . . . . . . . .	Proc
+mDumpMem . . . . . . . . . . . .	Proc
+mDump  . . . . . . . . . . . . .	Proc
+mGotoxy  . . . . . . . . . . . .	Proc
+mReadString  . . . . . . . . . .	Proc
+mShowRegister  . . . . . . . . .	Proc
+mShow  . . . . . . . . . . . . .	Proc
+mWriteLn . . . . . . . . . . . .	Proc
+mWriteSpace  . . . . . . . . . .	Proc
+mWriteString . . . . . . . . . .	Proc
+mWrite . . . . . . . . . . . . .	Proc
+
+
+Structures and Unions:
+
+                N a m e                  Size
+                                         Offset      Type
+
+CONSOLE_CURSOR_INFO  . . . . . .	 00000008
+  dwSize . . . . . . . . . . . .	 00000000	 DWord
+  bVisible . . . . . . . . . . .	 00000004	 DWord
+CONSOLE_SCREEN_BUFFER_INFO . . .	 00000016
+  dwSize . . . . . . . . . . . .	 00000000	 DWord
+  dwCursorPosition . . . . . . .	 00000004	 DWord
+  wAttributes  . . . . . . . . .	 00000008	 Word
+  srWindow . . . . . . . . . . .	 0000000A	 QWord
+  dwMaximumWindowSize  . . . . .	 00000012	 DWord
+COORD  . . . . . . . . . . . . .	 00000004
+  X  . . . . . . . . . . . . . .	 00000000	 Word
+  Y  . . . . . . . . . . . . . .	 00000002	 Word
+FILETIME . . . . . . . . . . . .	 00000008
+  loDateTime . . . . . . . . . .	 00000000	 DWord
+  hiDateTime . . . . . . . . . .	 00000004	 DWord
+FOCUS_EVENT_RECORD . . . . . . .	 00000004
+  bSetFocus  . . . . . . . . . .	 00000000	 DWord
+FPU_ENVIRON  . . . . . . . . . .	 0000001C
+  controlWord  . . . . . . . . .	 00000000	 Word
+  statusWord . . . . . . . . . .	 00000004	 Word
+  tagWord  . . . . . . . . . . .	 00000008	 Word
+  instrPointerOffset . . . . . .	 0000000C	 DWord
+  instrPointerSelector . . . . .	 00000010	 DWord
+  operandPointerOffset . . . . .	 00000014	 DWord
+  operandPointerSelector . . . .	 00000018	 Word
+INPUT_RECORD . . . . . . . . . .	 00000014
+  EventType  . . . . . . . . . .	 00000000	 Word
+  Event  . . . . . . . . . . . .	 00000004	 XmmWord
+  bKeyDown . . . . . . . . . . .	 00000000	 DWord
+  wRepeatCount . . . . . . . . .	 00000004	 Word
+  wVirtualKeyCode  . . . . . . .	 00000006	 Word
+  wVirtualScanCode . . . . . . .	 00000008	 Word
+  uChar  . . . . . . . . . . . .	 0000000A	 Word
+  UnicodeChar  . . . . . . . . .	 00000000	 Word
+  AsciiChar  . . . . . . . . . .	 00000000	 Byte
+  dwControlKeyState  . . . . . .	 0000000C	 DWord
+  dwMousePosition  . . . . . . .	 00000000	 DWord
+  dwButtonState  . . . . . . . .	 00000004	 DWord
+  dwMouseControlKeyState . . . .	 00000008	 DWord
+  dwEventFlags . . . . . . . . .	 0000000C	 DWord
+  dwSize . . . . . . . . . . . .	 00000000	 DWord
+  dwCommandId  . . . . . . . . .	 00000000	 DWord
+  bSetFocus  . . . . . . . . . .	 00000000	 DWord
+KEY_EVENT_RECORD . . . . . . . .	 00000010
+  bKeyDown . . . . . . . . . . .	 00000000	 DWord
+  wRepeatCount . . . . . . . . .	 00000004	 Word
+  wVirtualKeyCode  . . . . . . .	 00000006	 Word
+  wVirtualScanCode . . . . . . .	 00000008	 Word
+  uChar  . . . . . . . . . . . .	 0000000A	 Word
+  UnicodeChar  . . . . . . . . .	 00000000	 Word
+  AsciiChar  . . . . . . . . . .	 00000000	 Byte
+  dwControlKeyState  . . . . . .	 0000000C	 DWord
+MENU_EVENT_RECORD  . . . . . . .	 00000004
+  dwCommandId  . . . . . . . . .	 00000000	 DWord
+MOUSE_EVENT_RECORD . . . . . . .	 00000010
+  dwMousePosition  . . . . . . .	 00000000	 DWord
+  dwButtonState  . . . . . . . .	 00000004	 DWord
+  dwMouseControlKeyState . . . .	 00000008	 DWord
+  dwEventFlags . . . . . . . . .	 0000000C	 DWord
+SMALL_RECT . . . . . . . . . . .	 00000008
+  Left . . . . . . . . . . . . .	 00000000	 Word
+  Top  . . . . . . . . . . . . .	 00000002	 Word
+  Right  . . . . . . . . . . . .	 00000004	 Word
+  Bottom . . . . . . . . . . . .	 00000006	 Word
+SYSTEMTIME . . . . . . . . . . .	 00000010
+  wYear  . . . . . . . . . . . .	 00000000	 Word
+  wMonth . . . . . . . . . . . .	 00000002	 Word
+  wDayOfWeek . . . . . . . . . .	 00000004	 Word
+  wDay . . . . . . . . . . . . .	 00000006	 Word
+  wHour  . . . . . . . . . . . .	 00000008	 Word
+  wMinute  . . . . . . . . . . .	 0000000A	 Word
+  wSecond  . . . . . . . . . . .	 0000000C	 Word
+  wMilliseconds  . . . . . . . .	 0000000E	 Word
+WINDOW_BUFFER_SIZE_RECORD  . . .	 00000004
+  dwSize . . . . . . . . . . . .	 00000000	 DWord
+
+
+Segments and Groups:
+
+                N a m e                 Size     Length   Align   Combine Class
+
+FLAT . . . . . . . . . . . . . .	GROUP
+STACK  . . . . . . . . . . . . .	32 Bit	 00001000 Para	  Stack	  'STACK'	 
+_DATA  . . . . . . . . . . . . .	32 Bit	 00007E17 Para	  Public  'DATA'	
+_TEXT  . . . . . . . . . . . . .	32 Bit	 0000149F Para	  Public  'CODE'	
+
+
+Procedures, parameters, and locals:
+
+                N a m e                 Type     Value    Attr
+
+BubbleSort . . . . . . . . . . .	P Near	 000000D8 _TEXT	Length= 00000029 Public STDCALL
+  pArray . . . . . . . . . . . .	DWord	 bp + 00000008
+  Count  . . . . . . . . . . . .	DWord	 bp + 0000000C
+  L1 . . . . . . . . . . . . . .	L Near	 000000E2 _TEXT	
+  L2 . . . . . . . . . . . . . .	L Near	 000000E6 _TEXT	
+  L3 . . . . . . . . . . . . . .	L Near	 000000F2 _TEXT	
+  L4 . . . . . . . . . . . . . .	L Near	 000000FA _TEXT	
+CheckStudent . . . . . . . . . .	P Near	 000007A9 _TEXT	Length= 00000060 Public STDCALL
+  l  . . . . . . . . . . . . . .	L Near	 000007D1 _TEXT	
+  incStudent . . . . . . . . . .	L Near	 000007DE _TEXT	
+  incStudent1  . . . . . . . . .	L Near	 000007F0 _TEXT	
+  incStudent2  . . . . . . . . .	L Near	 000007FB _TEXT	
+  continue . . . . . . . . . . .	L Near	 00000804 _TEXT	
+  return . . . . . . . . . . . .	L Near	 00000808 _TEXT	
+CloseFile  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+CloseHandle  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Clrscr . . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+ConvertStringToInt . . . . . . .	P Near	 00000000 _TEXT	Length= 00000046 Public STDCALL
+  stringPtr  . . . . . . . . . .	DWord	 bp + 00000008
+  stringSize . . . . . . . . . .	DWord	 bp + 0000000C
+  convert  . . . . . . . . . . .	L Near	 00000022 _TEXT	
+  power  . . . . . . . . . . . .	L Near	 0000002F _TEXT	
+  lastNum  . . . . . . . . . . .	L Near	 00000033 _TEXT	
+CreateFileA  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+CreateOutputFile . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Crlf . . . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Delay  . . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+DeleteStudent  . . . . . . . . .	P Near	 00000D29 _TEXT	Length= 0000020D Public STDCALL
+  Target_Id  . . . . . . . . . .	DWord	 bp + 00000008
+  Target_Size  . . . . . . . . .	DWord	 bp + 0000000C
+  Not_Empty  . . . . . . . . . .	L Near	 00000D4B _TEXT	
+  While_Loop . . . . . . . . . .	L Near	 00000D4B _TEXT	
+  Cheak_NewLine  . . . . . . . .	L Near	 00000D6C _TEXT	
+  Row_Is_Read  . . . . . . . . .	L Near	 00000D92 _TEXT	
+  Read_Studant_Id  . . . . . . .	L Near	 00000DB0 _TEXT	
+  Break  . . . . . . . . . . . .	L Near	 00000DD3 _TEXT	
+  Not_Target . . . . . . . . . .	L Near	 00000E10 _TEXT	
+  Write_Row_NewBuffer  . . . . .	L Near	 00000E21 _TEXT	
+  Is_Target  . . . . . . . . . .	L Near	 00000E76 _TEXT	
+  File_Is_End  . . . . . . . . .	L Near	 00000E99 _TEXT	
+  Studant_Is_Deleted . . . . . .	L Near	 00000EC9 _TEXT	
+  Rwrite_Buffer  . . . . . . . .	L Near	 00000EF3 _TEXT	
+  Only_One_Studant . . . . . . .	L Near	 00000F1E _TEXT	
+DisplayStudentData . . . . . . .	P Near	 00000F36 _TEXT	Length= 00000157 Public STDCALL
+  sID  . . . . . . . . . . . . .	DWord	 bp + 00000008
+  checkAllRec  . . . . . . . . .	L Near	 00000F4D _TEXT	
+  getRec . . . . . . . . . . . .	L Near	 00000F5A _TEXT	
+  RecReadDone  . . . . . . . . .	L Near	 00000F66 _TEXT	
+  checkID  . . . . . . . . . . .	L Near	 00000F85 _TEXT	
+  outCheckID . . . . . . . . . .	L Near	 00000F8C _TEXT	
+  notID  . . . . . . . . . . . .	L Near	 00000FB3 _TEXT	
+  ID . . . . . . . . . . . . . .	L Near	 00000FB8 _TEXT	
+  endCheckAllRec . . . . . . . .	L Near	 00000FD2 _TEXT	
+  Found  . . . . . . . . . . . .	L Near	 00000FDB _TEXT	
+  coutID . . . . . . . . . . . .	L Near	 00000FEB _TEXT	
+  outCoutID  . . . . . . . . . .	L Near	 00000FF3 _TEXT	
+  coutName . . . . . . . . . . .	L Near	 00001011 _TEXT	
+  outCoutName  . . . . . . . . .	L Near	 00001019 _TEXT	
+  coutGrade  . . . . . . . . . .	L Near	 00001037 _TEXT	
+  outCoutGrade . . . . . . . . .	L Near	 0000103F _TEXT	
+  notFound . . . . . . . . . . .	L Near	 0000107D _TEXT	
+DisplayTop5  . . . . . . . . . .	P Near	 00000661 _TEXT	Length= 00000148 Public STDCALL
+  top5 . . . . . . . . . . . . .	L Near	 0000068C _TEXT	
+  checkAllRec  . . . . . . . . .	L Near	 000006A2 _TEXT	
+  getRec . . . . . . . . . . . .	L Near	 000006AF _TEXT	
+  RecReadDone  . . . . . . . . .	L Near	 000006BB _TEXT	
+  getSecComma  . . . . . . . . .	L Near	 000006D4 _TEXT	
+  setMaxStudent  . . . . . . . .	L Near	 00000724 _TEXT	
+  com  . . . . . . . . . . . . .	L Near	 00000730 _TEXT	
+  skip . . . . . . . . . . . . .	L Near	 0000073B _TEXT	
+  endCheckAllRec . . . . . . . .	L Near	 00000750 _TEXT	
+  endTop5  . . . . . . . . . . .	L Near	 00000790 _TEXT	
+  return . . . . . . . . . . . .	L Near	 000007A8 _TEXT	
+DisplayTopStudent  . . . . . . .	P Near	 0000051E _TEXT	Length= 00000143 Public STDCALL
+  sID  . . . . . . . . . . . . .	DWord	 bp + 00000008
+  checkAllRec  . . . . . . . . .	L Near	 00000535 _TEXT	
+  getRec . . . . . . . . . . . .	L Near	 00000542 _TEXT	
+  RecReadDone  . . . . . . . . .	L Near	 0000054E _TEXT	
+  checkID  . . . . . . . . . . .	L Near	 0000056D _TEXT	
+  outCheckID . . . . . . . . . .	L Near	 00000574 _TEXT	
+  notID  . . . . . . . . . . . .	L Near	 0000059B _TEXT	
+  ID . . . . . . . . . . . . . .	L Near	 000005A0 _TEXT	
+  endCheckAllRec . . . . . . . .	L Near	 000005BA _TEXT	
+  Found  . . . . . . . . . . . .	L Near	 000005C3 _TEXT	
+  coutID . . . . . . . . . . . .	L Near	 000005D3 _TEXT	
+  outCoutID  . . . . . . . . . .	L Near	 000005DB _TEXT	
+  coutName . . . . . . . . . . .	L Near	 000005F4 _TEXT	
+  outCoutName  . . . . . . . . .	L Near	 000005FC _TEXT	
+  coutGrade  . . . . . . . . . .	L Near	 00000615 _TEXT	
+  outCoutGrade . . . . . . . . .	L Near	 0000061D _TEXT	
+  notFound . . . . . . . . . . .	L Near	 00000651 _TEXT	
+DumpMem  . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+DumpRegs . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+EnrollStudent  . . . . . . . . .	P Near	 00000809 _TEXT	Length= 000000EB Public STDCALL
+  sID  . . . . . . . . . . . . .	DWord	 bp + 00000008
+  sName  . . . . . . . . . . . .	DWord	 bp + 0000000C
+  sGrade . . . . . . . . . . . .	DWord	 bp + 00000010
+  sSecNum  . . . . . . . . . . .	DWord	 bp + 00000014
+  section1 . . . . . . . . . . .	L Near	 0000081B _TEXT	
+  section2 . . . . . . . . . . .	L Near	 00000829 _TEXT	
+  canadd . . . . . . . . . . . .	L Near	 00000837 _TEXT	
+  Cannotadd  . . . . . . . . . .	L Near	 000008D8 _TEXT	
+  donee  . . . . . . . . . . . .	L Near	 000008F0 _TEXT	
+ExitProcess  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+FileTimeToDosDateTime  . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+FileTimeToSystemTime . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+FlushConsoleInputBuffer  . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+FormatMessageA . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Generate_Section_Report  . . . .	P Near	 00000357 _TEXT	Length= 000001C7 Public STDCALL
+  SecNum . . . . . . . . . . . .	Byte	 bp + 00000008
+  Not_Empty  . . . . . . . . . .	L Near	 00000372 _TEXT	
+  Copy_Buffer_Temp . . . . . . .	L Near	 00000387 _TEXT	
+  While_Loop . . . . . . . . . .	L Near	 000003B3 _TEXT	
+  Break  . . . . . . . . . . . .	L Near	 0000041E _TEXT	
+  Sec_Not_Empty  . . . . . . . .	L Near	 00000441 _TEXT	
+  Not_Need_Sort  . . . . . . . .	L Near	 0000045B _TEXT	
+  Copy_Sorted_Row  . . . . . . .	L Near	 00000466 _TEXT	
+  Write_File_Sec . . . . . . . .	L Near	 000004A4 _TEXT	
+  Section2 . . . . . . . . . . .	L Near	 000004CF _TEXT	
+  Print_String . . . . . . . . .	L Near	 000004D9 _TEXT	
+  Out_Function . . . . . . . . .	L Near	 000004ED _TEXT	
+  Return_Old_Buffer  . . . . . .	L Near	 00000502 _TEXT	
+GetCommandLineA  . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetCommandTail . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetConsoleCP . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetConsoleCursorInfo . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetConsoleMode . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetConsoleScreenBufferInfo . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetDateTime  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetFileTime  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetKeyState  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetLastError . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetLocalTime . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetMaxXY . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetMseconds  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetNumberOfConsoleInputEvents  .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetProcessHeap . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetStdHandle . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetSystemTime  . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetTextColor . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetTickCount . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Get_Alpha_Grade  . . . . . . . .	P Near	 00000101 _TEXT	Length= 00000060 Public STDCALL
+  Grade_Offset . . . . . . . . .	DWord	 bp + 00000008
+  Grade_Size . . . . . . . . . .	DWord	 bp + 0000000C
+  Else_If1 . . . . . . . . . . .	L Near	 00000126 _TEXT	
+  Else_If2 . . . . . . . . . . .	L Near	 00000136 _TEXT	
+  Else_If3 . . . . . . . . . . .	L Near	 00000146 _TEXT	
+  Else_If  . . . . . . . . . . .	L Near	 00000156 _TEXT	
+Get_Studant_Info . . . . . . . .	P Near	 00000161 _TEXT	Length= 000001F6 Public STDCALL
+  Studant_Id . . . . . . . . . .	DWord	 bp + 00000008
+  While_Loop . . . . . . . . . .	L Near	 00000182 _TEXT	
+  Break  . . . . . . . . . . . .	L Near	 000001BD _TEXT	
+  Split_At_Comma . . . . . . . .	L Near	 000001EB _TEXT	
+  Studant_Name . . . . . . . . .	L Near	 00000213 _TEXT	
+  Studant_Grade  . . . . . . . .	L Near	 0000022D _TEXT	
+  Studant_Sec  . . . . . . . . .	L Near	 00000247 _TEXT	
+  Comma_Found  . . . . . . . . .	L Near	 00000251 _TEXT	
+  Again  . . . . . . . . . . . .	L Near	 00000254 _TEXT	
+  Copy_Id  . . . . . . . . . . .	L Near	 0000027A _TEXT	
+  Copy_Name  . . . . . . . . . .	L Near	 000002B5 _TEXT	
+  Copy_Grade . . . . . . . . . .	L Near	 000002F0 _TEXT	
+Gotoxy . . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+HeapAlloc  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+HeapCreate . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+HeapDestroy  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+HeapFree . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+HeapSize . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+IsDigit  . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+LocalFree  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+MessageBoxA  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+MsgBoxAsk  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+MsgBox . . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+OpenDatabase . . . . . . . . . .	P Near	 0000108D _TEXT	Length= 000000AC Public STDCALL
+  fileN  . . . . . . . . . . . .	DWord	 bp + 00000008
+  bKey . . . . . . . . . . . . .	Byte	 bp + 0000000C
+  decrypt  . . . . . . . . . . .	L Near	 000010F5 _TEXT	
+  notKey . . . . . . . . . . . .	L Near	 00001112 _TEXT	
+  close  . . . . . . . . . . . .	L Near	 00001128 _TEXT	
+OpenInputFile  . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+ParseDecimal32 . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+ParseInteger32 . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+PeekConsoleInputA  . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Random32 . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+RandomRange  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Randomize  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+ReadChar . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+ReadConsoleA . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+ReadConsoleInputA  . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+ReadDec  . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+ReadFile . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+ReadFloat  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+ReadFromFile . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+ReadHex  . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+ReadInt  . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+ReadKeyFlush . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+ReadKey  . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+ReadString . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Read_Row_Function  . . . . . . .	P Near	 00000046 _TEXT	Length= 00000092 Public STDCALL
+  Buffer_Offset  . . . . . . . .	DWord	 bp + 00000008
+  Cheak_NewLine  . . . . . . . .	L Near	 00000070 _TEXT	
+  Row_Is_Read  . . . . . . . . .	L Near	 00000093 _TEXT	
+  Read_Studant_Id  . . . . . . .	L Near	 000000B1 _TEXT	
+  Break  . . . . . . . . . . . .	L Near	 000000D4 _TEXT	
+SaveDatabaseWithKey  . . . . . .	P Near	 00001179 _TEXT	Length= 00000077 Public STDCALL
+  fileN  . . . . . . . . . . . .	DWord	 bp + 00000008
+  bKey . . . . . . . . . . . . .	Byte	 bp + 0000000C
+  encrypt  . . . . . . . . . . .	L Near	 000011C2 _TEXT	
+  close  . . . . . . . . . . . .	L Near	 000011E2 _TEXT	
+SaveDatabase . . . . . . . . . .	P Near	 00001139 _TEXT	Length= 00000040 Public STDCALL
+  fileN  . . . . . . . . . . . .	DWord	 bp + 00000008
+SetConsoleCursorInfo . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+SetConsoleCursorPosition . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+SetConsoleMode . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+SetConsoleScreenBufferSize . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+SetConsoleTextAttribute  . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+SetConsoleTitleA . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+SetConsoleWindowInfo . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+SetFilePointer . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+SetLocalTime . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+SetTextColor . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+ShowFPUStack . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Sleep  . . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+StrLength  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Str_compare  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Str_copy . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Str_length . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Str_trim . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Str_ucase  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+SystemTimeToFileTime . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+UpdateGrade  . . . . . . . . . .	P Near	 000008F4 _TEXT	Length= 00000435 Public STDCALL
+  ID_CHECK . . . . . . . . . . .	DWord	 bp + 00000008
+  New_Grade  . . . . . . . . . .	DWord	 bp + 0000000C
+  File_Is_Not_Empty  . . . . . .	L Near	 00000916 _TEXT	
+  Read_The_Checked_ID  . . . . .	L Near	 00000930 _TEXT	
+  Main_Loop  . . . . . . . . . .	L Near	 0000094D _TEXT	
+  Check_NewLine  . . . . . . . .	L Near	 0000096E _TEXT	
+  Row_Without_NewLine  . . . . .	L Near	 00000994 _TEXT	
+  Read_Student_Id  . . . . . . .	L Near	 000009C3 _TEXT	
+  Finish . . . . . . . . . . . .	L Near	 000009F2 _TEXT	
+  Not_The_Same_ID  . . . . . . .	L Near	 00000A03 _TEXT	
+  Write_Row_Of_The_NewBuffer . .	L Near	 00000A14 _TEXT	
+  The_Same_ID  . . . . . . . . .	L Near	 00000A69 _TEXT	
+  Read_ID_Name_Grade_Sec . . . .	L Near	 00000A9E _TEXT	
+  continue . . . . . . . . . . .	L Near	 00000AB8 _TEXT	
+  cont . . . . . . . . . . . . .	L Near	 00000AC5 _TEXT	
+  Read_ID  . . . . . . . . . . .	L Near	 00000AD0 _TEXT	
+  continue2  . . . . . . . . . .	L Near	 00000AEF _TEXT	
+  Read_Name  . . . . . . . . . .	L Near	 00000AFA _TEXT	
+  continue3  . . . . . . . . . .	L Near	 00000B19 _TEXT	
+  Read_Grade . . . . . . . . . .	L Near	 00000B24 _TEXT	
+  continue4  . . . . . . . . . .	L Near	 00000B46 _TEXT	
+  Read_Sec . . . . . . . . . . .	L Near	 00000B51 _TEXT	
+  continue5  . . . . . . . . . .	L Near	 00000B73 _TEXT	
+  Write_ID . . . . . . . . . . .	L Near	 00000B84 _TEXT	
+  Write_Name . . . . . . . . . .	L Near	 00000BBF _TEXT	
+  Write_Grade  . . . . . . . . .	L Near	 00000BFD _TEXT	
+  Write_Section  . . . . . . . .	L Near	 00000C35 _TEXT	
+  End_Of_File  . . . . . . . . .	L Near	 00000CA8 _TEXT	
+  student_Is_Updated . . . . . .	L Near	 00000CD8 _TEXT	
+  Rewrite_Buffer . . . . . . . .	L Near	 00000CFE _TEXT	
+WaitMsg  . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+WriteBinB  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+WriteBin . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+WriteChar  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+WriteConsoleA  . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+WriteConsoleOutputAttribute  . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+WriteConsoleOutputCharacterA . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+WriteDec . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+WriteFile  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+WriteFloat . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+WriteHexB  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+WriteHex . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+WriteInt . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+WriteStackFrameName  . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+WriteStackFrame  . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+WriteString  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+WriteToFile  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+WriteWindowsMsg  . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+main . . . . . . . . . . . . . .	P Near	 000011F0 _TEXT	Length= 000002AF Public STDCALL
+  begin  . . . . . . . . . . . .	L Near	 00001230 _TEXT	
+  l1 . . . . . . . . . . . . . .	L Near	 000012ED _TEXT	
+  l2 . . . . . . . . . . . . . .	L Near	 000013AA _TEXT	
+  l3 . . . . . . . . . . . . . .	L Near	 000013FA _TEXT	
+  outDelete  . . . . . . . . . .	L Near	 00001434 _TEXT	
+  l4 . . . . . . . . . . . . . .	L Near	 00001439 _TEXT	
+  l5 . . . . . . . . . . . . . .	L Near	 00001455 _TEXT	
+  l6 . . . . . . . . . . . . . .	L Near	 0000145F _TEXT	
+  quit . . . . . . . . . . . . .	L Near	 00001488 _TEXT	
+  closeApp . . . . . . . . . . .	L Near	 00001498 _TEXT	
+printf . . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External C
+scanf  . . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External C
+wsprintfA  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External C
+
+
+Symbols:
+
+                N a m e                 Type     Value    Attr
+
+??0000 . . . . . . . . . . . . .	Byte	 00007B72 _DATA	
+??0001 . . . . . . . . . . . . .	Byte	 00007B74 _DATA	
+??0002 . . . . . . . . . . . . .	Byte	 00007B76 _DATA	
+??0003 . . . . . . . . . . . . .	Byte	 00007B78 _DATA	
+??0004 . . . . . . . . . . . . .	Byte	 00007B87 _DATA	
+??0005 . . . . . . . . . . . . .	Byte	 00007BA0 _DATA	
+??0006 . . . . . . . . . . . . .	Byte	 00007BBF _DATA	
+??0007 . . . . . . . . . . . . .	Byte	 00007BD7 _DATA	
+??0008 . . . . . . . . . . . . .	Byte	 00007BE4 _DATA	
+??0009 . . . . . . . . . . . . .	Byte	 00007BF3 _DATA	
+??000A . . . . . . . . . . . . .	Byte	 00007C03 _DATA	
+??000B . . . . . . . . . . . . .	Byte	 00007C15 _DATA	
+??000C . . . . . . . . . . . . .	Byte	 00007C24 _DATA	
+??000D . . . . . . . . . . . . .	Byte	 00007C40 _DATA	
+??000E . . . . . . . . . . . . .	Byte	 00007C58 _DATA	
+??000F . . . . . . . . . . . . .	Byte	 00007C73 _DATA	
+??0010 . . . . . . . . . . . . .	Byte	 00007C97 _DATA	
+??0011 . . . . . . . . . . . . .	Byte	 00007CAD _DATA	
+??0012 . . . . . . . . . . . . .	Byte	 00007CC1 _DATA	
+??0013 . . . . . . . . . . . . .	Byte	 00007CD7 _DATA	
+??0014 . . . . . . . . . . . . .	Byte	 00007CF3 _DATA	
+??0015 . . . . . . . . . . . . .	Byte	 00007D11 _DATA	
+??0016 . . . . . . . . . . . . .	Byte	 00007D30 _DATA	
+??0017 . . . . . . . . . . . . .	Byte	 00007D3C _DATA	
+??0018 . . . . . . . . . . . . .	Byte	 00007D60 _DATA	
+??0019 . . . . . . . . . . . . .	Byte	 00007D70 _DATA	
+??001A . . . . . . . . . . . . .	Byte	 00007D83 _DATA	
+??001B . . . . . . . . . . . . .	Byte	 00007D95 _DATA	
+??001C . . . . . . . . . . . . .	Byte	 00007DA8 _DATA	
+??001D . . . . . . . . . . . . .	Byte	 00007DB4 _DATA	
+??001E . . . . . . . . . . . . .	Byte	 00007DC2 _DATA	
+??001F . . . . . . . . . . . . .	Byte	 00007DD1 _DATA	
+??0020 . . . . . . . . . . . . .	Byte	 00007DE6 _DATA	
+??0021 . . . . . . . . . . . . .	Byte	 00007DFE _DATA	
+@CodeSize  . . . . . . . . . . .	Number	 00000000h   
+@DataSize  . . . . . . . . . . .	Number	 00000000h   
+@Interface . . . . . . . . . . .	Number	 00000003h   
+@Model . . . . . . . . . . . . .	Number	 00000007h   
+@code  . . . . . . . . . . . . .	Text   	 _TEXT
+@data  . . . . . . . . . . . . .	Text   	 FLAT
+@fardata?  . . . . . . . . . . .	Text   	 FLAT
+@fardata . . . . . . . . . . . .	Text   	 FLAT
+@stack . . . . . . . . . . . . .	Text   	 FLAT
+ALT_MASK . . . . . . . . . . . .	Number	 00000003h   
+Alpha_Grade  . . . . . . . . . .	Byte	 00007B68 _DATA	
+Array_Students_Id  . . . . . . .	DWord	 000079D4 _DATA	
+BUFFER_SIZE  . . . . . . . . . .	Number	 00001388h   
+CAPSLOCK_ON  . . . . . . . . . .	Number	 00000080h   
+CREATE_ALWAYS  . . . . . . . . .	Number	 00000002h   
+CREATE_NEW . . . . . . . . . . .	Number	 00000001h   
+CTRL_MASK  . . . . . . . . . . .	Number	 0000000Ch   
+Cheak_Id . . . . . . . . . . . .	Byte	 00003D51 _DATA	
+Counter  . . . . . . . . . . . .	DWord	 00007B6D _DATA	
+CreateFile . . . . . . . . . . .	Text   	 CreateFileA
+DO_NOT_SHARE . . . . . . . . . .	Number	 00000000h   
+ENABLE_ECHO_INPUT  . . . . . . .	Number	 00000004h   
+ENABLE_LINE_INPUT  . . . . . . .	Number	 00000002h   
+ENABLE_MOUSE_INPUT . . . . . . .	Number	 00000010h   
+ENABLE_PROCESSED_INPUT . . . . .	Number	 00000001h   
+ENABLE_PROCESSED_OUTPUT  . . . .	Number	 00000001h   
+ENABLE_WINDOW_INPUT  . . . . . .	Number	 00000008h   
+ENABLE_WRAP_AT_EOL_OUTPUT  . . .	Number	 00000002h   
+ENHANCED_KEY . . . . . . . . . .	Number	 00000100h   
+Empty_File . . . . . . . . . . .	Byte	 00003D80 _DATA	
+Empty_Sec  . . . . . . . . . . .	Byte	 000051D7 _DATA	
+FALSE  . . . . . . . . . . . . .	Number	 00000000h   
+FILE_APPEND_DATA . . . . . . . .	Number	 00000004h   
+FILE_ATTRIBUTE_ARCHIVE . . . . .	Number	 00000020h   
+FILE_ATTRIBUTE_COMPRESSED  . . .	Number	 00000800h   
+FILE_ATTRIBUTE_DEVICE  . . . . .	Number	 00000040h   
+FILE_ATTRIBUTE_DIRECTORY . . . .	Number	 00000010h   
+FILE_ATTRIBUTE_ENCRYPTED . . . .	Number	 00004000h   
+FILE_ATTRIBUTE_HIDDEN  . . . . .	Number	 00000002h   
+FILE_ATTRIBUTE_NORMAL  . . . . .	Number	 00000080h   
+FILE_ATTRIBUTE_NOT_CONTENT_INDEXED .	Number	 00002000h   
+FILE_ATTRIBUTE_OFFLINE . . . . .	Number	 00001000h   
+FILE_ATTRIBUTE_READONLY  . . . .	Number	 00000001h   
+FILE_ATTRIBUTE_REPARSE_POINT . .	Number	 00000400h   
+FILE_ATTRIBUTE_SPARSE_FILE . . .	Number	 00000200h   
+FILE_ATTRIBUTE_SYSTEM  . . . . .	Number	 00000004h   
+FILE_ATTRIBUTE_TEMPORARY . . . .	Number	 00000100h   
+FILE_BEGIN . . . . . . . . . . .	Number	 00000000h   
+FILE_CURRENT . . . . . . . . . .	Number	 00000001h   
+FILE_DELETE_CHILD  . . . . . . .	Number	 00000040h   
+FILE_END . . . . . . . . . . . .	Number	 00000002h   
+FILE_READ_DATA . . . . . . . . .	Number	 00000001h   
+FILE_SHARE_DELETE  . . . . . . .	Number	 00000004h   
+FILE_SHARE_READ  . . . . . . . .	Number	 00000001h   
+FILE_SHARE_WRITE . . . . . . . .	Number	 00000002h   
+FILE_WRITE_DATA  . . . . . . . .	Number	 00000002h   
+FOCUS_EVENT  . . . . . . . . . .	Number	 00000010h   
+FORMAT_MESSAGE_ALLOCATE_BUFFER .	Number	 00000100h   
+FORMAT_MESSAGE_FROM_SYSTEM . . .	Number	 00001000h   
+File_Is_Empty  . . . . . . . . .	Byte	 00002811 _DATA	
+FormatMessage  . . . . . . . . .	Text   	 FormatMessageA
+GENERIC_ALL  . . . . . . . . . .	Number	 10000000h   
+GENERIC_EXECUTE  . . . . . . . .	Number	 20000000h   
+GENERIC_READ . . . . . . . . . .	Number	 -80000000h   
+GENERIC_WRITE  . . . . . . . . .	Number	 40000000h   
+GetCommandLine . . . . . . . . .	Text   	 GetCommandLineA
+Get_Sec_Number . . . . . . . . .	Byte	 0000519A _DATA	
+Get_Studant_Id . . . . . . . . .	Byte	 00003D5B _DATA	
+Get_Student_Id . . . . . . . . .	Byte	 000027C4 _DATA	
+Get_Student_Name . . . . . . . .	Byte	 000027E9 _DATA	
+Grade_Counter  . . . . . . . . .	DWord	 00003D05 _DATA	
+Grades . . . . . . . . . . . . .	Byte	 00003C83 _DATA	
+HANDLE . . . . . . . . . . . . .	Text   	 DWORD
+HEAP_GENERATE_EXCEPTIONS . . . .	Number	 00000004h   
+HEAP_GROWABLE  . . . . . . . . .	Number	 00000002h   
+HEAP_NO_SERIALIZE  . . . . . . .	Number	 00000001h   
+HEAP_REALLOC_IN_PLACE_ONLY . . .	Number	 00000010h   
+HEAP_ZERO_MEMORY . . . . . . . .	Number	 00000008h   
+IDABORT  . . . . . . . . . . . .	Number	 00000003h   
+IDCANCEL . . . . . . . . . . . .	Number	 00000002h   
+IDCLOSE  . . . . . . . . . . . .	Number	 00000008h   
+IDCONTINUE . . . . . . . . . . .	Number	 0000000Bh   
+IDHELP . . . . . . . . . . . . .	Number	 00000009h   
+IDIGNORE . . . . . . . . . . . .	Number	 00000005h   
+IDNO . . . . . . . . . . . . . .	Number	 00000007h   
+IDOK . . . . . . . . . . . . . .	Number	 00000001h   
+IDRETRY  . . . . . . . . . . . .	Number	 00000004h   
+IDTIMEOUT  . . . . . . . . . . .	Number	 00007D00h   
+IDTRYAGAIN . . . . . . . . . . .	Number	 0000000Ah   
+IDYES  . . . . . . . . . . . . .	Number	 00000006h   
+ID_Counter . . . . . . . . . . .	DWord	 00003CFD _DATA	
+INVALID_HANDLE_VALUE . . . . . .	Number	 -00000001h   
+Index_Min_Id . . . . . . . . . .	DWord	 000079D0 _DATA	
+KBDOWN_FLAG  . . . . . . . . . .	Number	 00000001h   
+KEY_EVENT  . . . . . . . . . . .	Number	 00000001h   
+KEY_MASKS  . . . . . . . . . . .	Number	 0000001Fh   
+Key  . . . . . . . . . . . . . .	Byte	 00000000 _DATA	
+LEFT_ALT_PRESSED . . . . . . . .	Number	 00000002h   
+LEFT_CTRL_PRESSED  . . . . . . .	Number	 00000008h   
+Loop_Counter . . . . . . . . . .	DWord	 00007B69 _DATA	
+MB_ABORTRETRYIGNORE  . . . . . .	Number	 00000002h   
+MB_APPLMODAL . . . . . . . . . .	Number	 00000000h   
+MB_CANCELTRYCONTINUE . . . . . .	Number	 00000006h   
+MB_DEFBUTTON1  . . . . . . . . .	Number	 00000000h   
+MB_DEFBUTTON2  . . . . . . . . .	Number	 00000100h   
+MB_DEFBUTTON3  . . . . . . . . .	Number	 00000200h   
+MB_DEFBUTTON4  . . . . . . . . .	Number	 00000300h   
+MB_HELP  . . . . . . . . . . . .	Number	 00004000h   
+MB_ICONASTERISK  . . . . . . . .	Number	 00000040h   
+MB_ICONERROR . . . . . . . . . .	Number	 00000010h   
+MB_ICONEXCLAMATION . . . . . . .	Number	 00000030h   
+MB_ICONHAND  . . . . . . . . . .	Number	 00000010h   
+MB_ICONINFORMATION . . . . . . .	Number	 00000040h   
+MB_ICONQUESTION  . . . . . . . .	Number	 00000020h   
+MB_ICONSTOP  . . . . . . . . . .	Number	 00000010h   
+MB_ICONWARNING . . . . . . . . .	Number	 00000030h   
+MB_OKCANCEL  . . . . . . . . . .	Number	 00000001h   
+MB_OK  . . . . . . . . . . . . .	Number	 00000000h   
+MB_RETRYCANCEL . . . . . . . . .	Number	 00000005h   
+MB_SYSTEMMODAL . . . . . . . . .	Number	 00001000h   
+MB_TASKMODAL . . . . . . . . . .	Number	 00002000h   
+MB_USERICON  . . . . . . . . . .	Number	 00000080h   
+MB_YESNOCANCEL . . . . . . . . .	Number	 00000003h   
+MB_YESNO . . . . . . . . . . . .	Number	 00000004h   
+MENU_EVENT . . . . . . . . . . .	Number	 00000008h   
+MOUSE_EVENT  . . . . . . . . . .	Number	 00000002h   
+MessageBox . . . . . . . . . . .	Text   	 MessageBoxA
+NULL . . . . . . . . . . . . . .	Number	 00000000h   
+NUMLOCK_ON . . . . . . . . . . .	Number	 00000020h   
+Name_Counter . . . . . . . . . .	DWord	 00003D01 _DATA	
+Names  . . . . . . . . . . . . .	Byte	 00003C4C _DATA	
+New_Buffer . . . . . . . . . . .	Byte	 00003DDB _DATA	
+New_Row  . . . . . . . . . . . .	Byte	 00005283 _DATA	
+OPEN_ALWAYS  . . . . . . . . . .	Number	 00000004h   
+OPEN_EXISTING  . . . . . . . . .	Number	 00000003h   
+PeekConsoleInput . . . . . . . .	Text   	 PeekConsoleInputA
+RIGHT_ALT_PRESSED  . . . . . . .	Number	 00000001h   
+RIGHT_CTRL_PRESSED . . . . . . .	Number	 00000004h   
+ReadConsoleInput . . . . . . . .	Text   	 ReadConsoleInputA
+ReadConsole  . . . . . . . . . .	Text   	 ReadConsoleA
+Read_Row_Offset  . . . . . . . .	DWord	 00003D4D _DATA	
+Read_Row . . . . . . . . . . . .	Byte	 00003D16 _DATA	
+Read_Sec_Number  . . . . . . . .	Byte	 0000523A _DATA	
+Rec  . . . . . . . . . . . . . .	Byte	 00002774 _DATA	
+Row_Is_Deleted . . . . . . . . .	DWord	 0000516C _DATA	
+Row_Is_Updated . . . . . . . . .	DWord	 00003CF9 _DATA	
+Row_Offset . . . . . . . . . . .	DWord	 00003C3E _DATA	
+Row  . . . . . . . . . . . . . .	Byte	 00003C07 _DATA	
+SCROLLLOCK_ON  . . . . . . . . .	Number	 00000040h   
+SHIFT_MASK . . . . . . . . . . .	Number	 00000010h   
+SHIFT_PRESSED  . . . . . . . . .	Number	 00000010h   
+STD_ERROR_HANDLE . . . . . . . .	Number	 -0000000Ch   
+STD_INPUT_HANDLE . . . . . . . .	Number	 -0000000Ah   
+STD_OUTPUT_HANDLE  . . . . . . .	Number	 -0000000Bh   
+Sec1_File_Name . . . . . . . . .	Byte	 0000520E _DATA	
+Sec2_File_Name . . . . . . . . .	Byte	 00005224 _DATA	
+Sec_Genrated . . . . . . . . . .	Byte	 00005170 _DATA	
+SectiOn  . . . . . . . . . . . .	Byte	 00003CBA _DATA	
+Section_Counter  . . . . . . . .	DWord	 00003D09 _DATA	
+SetConsoleTitle  . . . . . . . .	Text   	 SetConsoleTitleA
+Size_Array . . . . . . . . . . .	DWord	 00007B64 _DATA	
+Size_Cheak_Id  . . . . . . . . .	DWord	 00003D57 _DATA	
+Size_Grades  . . . . . . . . . .	DWord	 00003CB6 _DATA	
+Size_Name  . . . . . . . . . . .	DWord	 00003C7F _DATA	
+Size_New_Buffer  . . . . . . . .	DWord	 00005164 _DATA	
+Size_Read_Row  . . . . . . . . .	DWord	 00003D49 _DATA	
+Size_Row . . . . . . . . . . . .	DWord	 00003C3A _DATA	
+Size_Sorted_Buffer . . . . . . .	DWord	 0000663F _DATA	
+Size_Student_Grade . . . . . . .	DWord	 0000527E _DATA	
+Size_Student_Id  . . . . . . . .	DWord	 00005241 _DATA	
+Size_Student_Name  . . . . . . .	DWord	 00005277 _DATA	
+Size_Temp_Buffer . . . . . . . .	DWord	 000079CC _DATA	
+Size_Update_Buffer . . . . . . .	DWord	 00003BFF _DATA	
+Size_checked_Id  . . . . . . . .	DWord	 00003C48 _DATA	
+Sorted_Buffer  . . . . . . . . .	Byte	 000052B6 _DATA	
+Studant_Not_Found  . . . . . . .	Byte	 00003DA7 _DATA	
+Student_Grade  . . . . . . . . .	Byte	 0000527B _DATA	
+Student_Id . . . . . . . . . . .	Byte	 0000523B _DATA	
+Student_Name . . . . . . . . . .	Byte	 00005245 _DATA	
+Student_Not_Found  . . . . . . .	Byte	 0000283D _DATA	
+Student_Sec  . . . . . . . . . .	Byte	 00005282 _DATA	
+TAB  . . . . . . . . . . . . . .	Number	 00000009h   
+TRUE . . . . . . . . . . . . . .	Number	 00000001h   
+TRUNCATE_EXISTING  . . . . . . .	Number	 00000005h   
+Target_Grade_Size  . . . . . . .	DWord	 00003CF1 _DATA	
+Target_ID_Size . . . . . . . . .	DWord	 00003CF5 _DATA	
+Target_Int . . . . . . . . . . .	DWord	 00005168 _DATA	
+Temp2  . . . . . . . . . . . . .	DWord	 00003D0D _DATA	
+Temp_Buffer  . . . . . . . . . .	Byte	 00006643 _DATA	
+Temp . . . . . . . . . . . . . .	DWord	 00003C03 _DATA	
+TheIntNumber2  . . . . . . . . .	Byte	 00003D15 _DATA	
+TheIntNumber . . . . . . . . . .	DWord	 00003D11 _DATA	
+Update_Buffer  . . . . . . . . .	Byte	 00002876 _DATA	
+VK_11  . . . . . . . . . . . . .	Number	 000000BDh   
+VK_12  . . . . . . . . . . . . .	Number	 000000BBh   
+VK_ADD . . . . . . . . . . . . .	Number	 0000006Bh   
+VK_BACK  . . . . . . . . . . . .	Number	 00000008h   
+VK_CANCEL  . . . . . . . . . . .	Number	 00000003h   
+VK_CAPITAL . . . . . . . . . . .	Number	 00000014h   
+VK_CLEAR . . . . . . . . . . . .	Number	 0000000Ch   
+VK_CONTROL . . . . . . . . . . .	Number	 00000011h   
+VK_DECIMAL . . . . . . . . . . .	Number	 0000006Eh   
+VK_DELETE  . . . . . . . . . . .	Number	 0000002Eh   
+VK_DIVIDE  . . . . . . . . . . .	Number	 0000006Fh   
+VK_DOWN  . . . . . . . . . . . .	Number	 00000028h   
+VK_END . . . . . . . . . . . . .	Number	 00000023h   
+VK_ESCAPE  . . . . . . . . . . .	Number	 0000001Bh   
+VK_EXECUTE . . . . . . . . . . .	Number	 0000002Bh   
+VK_F10 . . . . . . . . . . . . .	Number	 00000079h   
+VK_F11 . . . . . . . . . . . . .	Number	 0000007Ah   
+VK_F12 . . . . . . . . . . . . .	Number	 0000007Bh   
+VK_F13 . . . . . . . . . . . . .	Number	 0000007Ch   
+VK_F14 . . . . . . . . . . . . .	Number	 0000007Dh   
+VK_F15 . . . . . . . . . . . . .	Number	 0000007Eh   
+VK_F16 . . . . . . . . . . . . .	Number	 0000007Fh   
+VK_F17 . . . . . . . . . . . . .	Number	 00000080h   
+VK_F18 . . . . . . . . . . . . .	Number	 00000081h   
+VK_F19 . . . . . . . . . . . . .	Number	 00000082h   
+VK_F1  . . . . . . . . . . . . .	Number	 00000070h   
+VK_F20 . . . . . . . . . . . . .	Number	 00000083h   
+VK_F21 . . . . . . . . . . . . .	Number	 00000084h   
+VK_F22 . . . . . . . . . . . . .	Number	 00000085h   
+VK_F23 . . . . . . . . . . . . .	Number	 00000086h   
+VK_F24 . . . . . . . . . . . . .	Number	 00000087h   
+VK_F2  . . . . . . . . . . . . .	Number	 00000071h   
+VK_F3  . . . . . . . . . . . . .	Number	 00000072h   
+VK_F4  . . . . . . . . . . . . .	Number	 00000073h   
+VK_F5  . . . . . . . . . . . . .	Number	 00000074h   
+VK_F6  . . . . . . . . . . . . .	Number	 00000075h   
+VK_F7  . . . . . . . . . . . . .	Number	 00000076h   
+VK_F8  . . . . . . . . . . . . .	Number	 00000077h   
+VK_F9  . . . . . . . . . . . . .	Number	 00000078h   
+VK_HELP  . . . . . . . . . . . .	Number	 0000002Fh   
+VK_HOME  . . . . . . . . . . . .	Number	 00000024h   
+VK_INSERT  . . . . . . . . . . .	Number	 0000002Dh   
+VK_LBUTTON . . . . . . . . . . .	Number	 00000001h   
+VK_LCONTROL  . . . . . . . . . .	Number	 000000A2h   
+VK_LEFT  . . . . . . . . . . . .	Number	 00000025h   
+VK_LMENU . . . . . . . . . . . .	Number	 000000A4h   
+VK_LSHIFT  . . . . . . . . . . .	Number	 000000A0h   
+VK_MENU  . . . . . . . . . . . .	Number	 00000012h   
+VK_MULTIPLY  . . . . . . . . . .	Number	 0000006Ah   
+VK_NEXT  . . . . . . . . . . . .	Number	 00000022h   
+VK_NUMLOCK . . . . . . . . . . .	Number	 00000090h   
+VK_NUMPAD0 . . . . . . . . . . .	Number	 00000060h   
+VK_NUMPAD1 . . . . . . . . . . .	Number	 00000061h   
+VK_NUMPAD2 . . . . . . . . . . .	Number	 00000062h   
+VK_NUMPAD3 . . . . . . . . . . .	Number	 00000063h   
+VK_NUMPAD4 . . . . . . . . . . .	Number	 00000064h   
+VK_NUMPAD5 . . . . . . . . . . .	Number	 00000065h   
+VK_NUMPAD6 . . . . . . . . . . .	Number	 00000066h   
+VK_NUMPAD7 . . . . . . . . . . .	Number	 00000067h   
+VK_NUMPAD8 . . . . . . . . . . .	Number	 00000068h   
+VK_NUMPAD9 . . . . . . . . . . .	Number	 00000069h   
+VK_PAUSE . . . . . . . . . . . .	Number	 00000013h   
+VK_PRINT . . . . . . . . . . . .	Number	 0000002Ah   
+VK_PRIOR . . . . . . . . . . . .	Number	 00000021h   
+VK_RBUTTON . . . . . . . . . . .	Number	 00000002h   
+VK_RCONTROL  . . . . . . . . . .	Number	 000000A3h   
+VK_RETURN  . . . . . . . . . . .	Number	 0000000Dh   
+VK_RIGHT . . . . . . . . . . . .	Number	 00000027h   
+VK_RMENU . . . . . . . . . . . .	Number	 000000A5h   
+VK_RSHIFT  . . . . . . . . . . .	Number	 000000A1h   
+VK_SCROLL  . . . . . . . . . . .	Number	 00000091h   
+VK_SEPARATER . . . . . . . . . .	Number	 0000006Ch   
+VK_SHIFT . . . . . . . . . . . .	Number	 00000010h   
+VK_SNAPSHOT  . . . . . . . . . .	Number	 0000002Ch   
+VK_SPACE . . . . . . . . . . . .	Number	 00000020h   
+VK_SUBTRACT  . . . . . . . . . .	Number	 0000006Dh   
+VK_TAB . . . . . . . . . . . . .	Number	 00000009h   
+VK_UP  . . . . . . . . . . . . .	Number	 00000026h   
+WINDOW_BUFFER_SIZE_EVENT . . . .	Number	 00000004h   
+WriteConsoleOutputCharacter  . .	Text   	 WriteConsoleOutputCharacterA
+WriteConsole . . . . . . . . . .	Text   	 WriteConsoleA
+black  . . . . . . . . . . . . .	Number	 00000000h   
+blue . . . . . . . . . . . . . .	Number	 00000001h   
+brown  . . . . . . . . . . . . .	Number	 00000006h   
+buffer . . . . . . . . . . . . .	Byte	 0000005C _DATA	
+checked_Id . . . . . . . . . . .	Byte	 00003C42 _DATA	
+comma  . . . . . . . . . . . . .	Byte	 00000019 _DATA	
+cyan . . . . . . . . . . . . . .	Number	 00000003h   
+exit . . . . . . . . . . . . . .	Text   	 INVOKE ExitProcess,0
+fileHandle . . . . . . . . . . .	DWord	 00000013 _DATA	
+fileName . . . . . . . . . . . .	Byte	 00000001 _DATA	
+grade  . . . . . . . . . . . . .	Byte	 00000055 _DATA	
+gray . . . . . . . . . . . . . .	Number	 00000008h   
+green  . . . . . . . . . . . . .	Number	 00000002h   
+intNum . . . . . . . . . . . . .	DWord	 000027B2 _DATA	
+lightBlue  . . . . . . . . . . .	Number	 00000009h   
+lightCyan  . . . . . . . . . . .	Number	 0000000Bh   
+lightGray  . . . . . . . . . . .	Number	 00000007h   
+lightGreen . . . . . . . . . . .	Number	 0000000Ah   
+lightMagenta . . . . . . . . . .	Number	 0000000Dh   
+lightRed . . . . . . . . . . . .	Number	 0000000Ch   
+magenta  . . . . . . . . . . . .	Number	 00000005h   
+maxStudentGrade  . . . . . . . .	DWord	 000027C0 _DATA	
+maxStudentID . . . . . . . . . .	Byte	 000027B6 _DATA	
+newLine  . . . . . . . . . . . .	Byte	 00000017 _DATA	
+red  . . . . . . . . . . . . . .	Number	 00000004h   
+secNumber  . . . . . . . . . . .	Byte	 0000005A _DATA	
+select . . . . . . . . . . . . .	Byte	 00007B71 _DATA	
+size_SectiOn . . . . . . . . . .	DWord	 00003CED _DATA	
+studentCounter1  . . . . . . . .	DWord	 000027AA _DATA	
+studentCounter2  . . . . . . . .	DWord	 000027AE _DATA	
+studentID  . . . . . . . . . . .	Byte	 0000001A _DATA	
+studentName  . . . . . . . . . .	Byte	 00000021 _DATA	
+szBuffer . . . . . . . . . . . .	DWord	 000013E4 _DATA	
+szGrade  . . . . . . . . . . . .	Byte	 00000059 _DATA	
+szID . . . . . . . . . . . . . .	Byte	 00000020 _DATA	
+szMaxStudentID . . . . . . . . .	DWord	 000027BC _DATA	
+szName . . . . . . . . . . . . .	Byte	 00000054 _DATA	
+szRec  . . . . . . . . . . . . .	DWord	 000027A6 _DATA	
+szTempBuffer . . . . . . . . . .	DWord	 00002770 _DATA	
+tempBuffer . . . . . . . . . . .	Byte	 000013E8 _DATA	
+white  . . . . . . . . . . . . .	Number	 0000000Fh   
+wsprintf . . . . . . . . . . . .	Text   	 wsprintfA
+yellow . . . . . . . . . . . . .	Number	 0000000Eh   
+
+	   0 Warnings
+	   0 Errors
